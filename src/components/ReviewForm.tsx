@@ -1,11 +1,11 @@
 // components/ReviewForm.tsx
 import React, { useState } from 'react';
-import { Star, Send, CheckCircle } from 'lucide-react';
+import { Star, Send, CheckCircle, Loader2 } from 'lucide-react';
 import { useReviewContext } from '../contexts/ReviewContext';
 
-interface Review {
+interface ReviewFormData {
   name: string;
-  location?: string;
+  location: string;
   text: string;
   rating: number;
 }
@@ -13,7 +13,7 @@ interface Review {
 const ReviewForm: React.FC = () => {
   const { addReview } = useReviewContext();
 
-  const [formData, setFormData] = useState<Review>({
+  const [formData, setFormData] = useState<ReviewFormData>({
     name: '',
     location: '',
     text: '',
@@ -22,23 +22,48 @@ const ReviewForm: React.FC = () => {
 
   const [hoveredRating, setHoveredRating] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (formData.rating === 0) {
-      alert('Please select a rating');
+      setError('Please select a rating');
       return;
     }
 
+    if (!formData.name.trim()) {
+      setError('Please enter your name');
+      return;
+    }
+
+    if (!formData.text.trim()) {
+      setError('Please write a review');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
+
     try {
-      await addReview(formData);
+      await addReview({
+        name: formData.name.trim(),
+        location: formData.location.trim(),
+        text: formData.text.trim(),
+        rating: formData.rating
+      });
+      
       setIsSubmitted(true);
       setTimeout(() => {
         setIsSubmitted(false);
         setFormData({ name: '', location: '', text: '', rating: 0 });
       }, 3000);
-    } catch {
-      alert('Something went wrong. Please try again.');
+    } catch (err) {
+      console.error('Error submitting review:', err);
+      setError('Failed to submit review. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -47,10 +72,12 @@ const ReviewForm: React.FC = () => {
       ...formData,
       [e.target.name]: e.target.value
     });
+    setError(null);
   };
 
   const handleStarClick = (rating: number) => {
     setFormData({ ...formData, rating });
+    setError(null);
   };
 
   if (isSubmitted) {
@@ -61,7 +88,7 @@ const ReviewForm: React.FC = () => {
           Thank You!
         </h3>
         <p className="text-gray-600 dark:text-gray-300">
-          Your review has been submitted and will appear after approval.
+          Your review has been submitted successfully and will appear shortly.
         </p>
       </div>
     );
@@ -69,6 +96,12 @@ const ReviewForm: React.FC = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {error && (
+        <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+          <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label htmlFor="review-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -83,6 +116,7 @@ const ReviewForm: React.FC = () => {
             onChange={handleChange}
             className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors duration-200"
             placeholder="Your full name"
+            disabled={isSubmitting}
           />
         </div>
         <div>
@@ -97,6 +131,7 @@ const ReviewForm: React.FC = () => {
             onChange={handleChange}
             className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors duration-200"
             placeholder="e.g., UK Tourist, Local Business"
+            disabled={isSubmitting}
           />
         </div>
       </div>
@@ -113,7 +148,8 @@ const ReviewForm: React.FC = () => {
               onClick={() => handleStarClick(star)}
               onMouseEnter={() => setHoveredRating(star)}
               onMouseLeave={() => setHoveredRating(0)}
-              className="p-1 transition-colors duration-200 hover:scale-110"
+              className="p-1 transition-colors duration-200 hover:scale-110 disabled:cursor-not-allowed"
+              disabled={isSubmitting}
             >
               <Star
                 className={`h-8 w-8 transition-colors duration-200 ${
@@ -143,15 +179,26 @@ const ReviewForm: React.FC = () => {
           onChange={handleChange}
           className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors duration-200 resize-none"
           placeholder="Share your experience working with me..."
+          disabled={isSubmitting}
         ></textarea>
       </div>
 
       <button
         type="submit"
-        className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-4 rounded-lg transition-all duration-300 flex items-center justify-center transform hover:scale-105 shadow-lg hover:shadow-xl"
+        disabled={isSubmitting}
+        className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-semibold py-4 rounded-lg transition-all duration-300 flex items-center justify-center transform hover:scale-105 shadow-lg hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed"
       >
-        Submit Review
-        <Send className="ml-2 h-5 w-5" />
+        {isSubmitting ? (
+          <>
+            <Loader2 className="animate-spin mr-2 h-5 w-5" />
+            Submitting...
+          </>
+        ) : (
+          <>
+            Submit Review
+            <Send className="ml-2 h-5 w-5" />
+          </>
+        )}
       </button>
     </form>
   );

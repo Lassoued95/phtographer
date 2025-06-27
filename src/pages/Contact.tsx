@@ -1,41 +1,18 @@
 import { useState } from 'react';
-import { Mail, Phone, MapPin, MessageSquare, Clock, Star, InstagramIcon } from 'lucide-react';
+import { Mail, Phone, MapPin, MessageSquare, Clock, Star, Instagram } from 'lucide-react';
 import AnimatedSection from '../components/AnimatedSection';
 import ReviewForm from '../components/ReviewForm';
+import ReviewList from '../components/ReviewList';
 import ContactForm from '../components/contactform';
 
 const Contact = () => {
   const [activeTab, setActiveTab] = useState<'contact' | 'review'>('contact');
-  const [reviews, setReviews] = useState([
-    {
-      name: "Sarah Johnson",
-      location: "UK Tourist",
-      text: "Amazing photos of our Djerba vacation! Professional and creative.",
-      rating: 5,
-    },
-    {
-      name: "Hotel Djerba Plaza",
-      location: "Tourism Partner",
-      text: "Excellent promotional content that boosted our bookings significantly.",
-      rating: 5,
-    },
-    {
-      name: "Marco Rossi",
-      location: "Italian Traveler",
-      text: "Captured the essence of Tunisia beautifully. Highly recommended!",
-      rating: 5,
-    },
-  ]);
-
-  const handleReviewSubmit = (review: { name: string; location: string; text: string; rating: number }) => {
-    setReviews([review, ...reviews]);
-  };
 
   const contactInfo = [
     {
       icon: Mail,
       title: 'Email',
-      value: 'djerbatnsphoto@gmail.com.com',
+      value: 'djerbatnsphoto@gmail.com',
       link: 'mailto:djerbatnsphoto@gmail.com'
     },
     {
@@ -45,7 +22,7 @@ const Contact = () => {
       link: 'tel:+21625740872'
     },
     {
-      icon: InstagramIcon,
+      icon: Instagram,
       title: 'Instagram',
       value: '@djerbatns',
       link: 'https://www.instagram.com/djerbatns'
@@ -54,7 +31,7 @@ const Contact = () => {
       icon: MapPin,
       title: 'Location',
       value: 'Djerba, Tunisia',
-      
+      link: null
     },
     {
       icon: Clock,
@@ -104,7 +81,7 @@ const Contact = () => {
                 }`}
               >
                 <Star className="h-4 w-4 mr-2" />
-                Leave a Review
+                Reviews
               </button>
             </div>
           </div>
@@ -160,7 +137,7 @@ const Contact = () => {
                       For faster response, especially for urgent bookings, reach out via WhatsApp.
                     </p>
                     <a
-                      href="https://wa.me/21612345678"
+                      href="https://wa.me/21625740872"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
@@ -219,36 +196,15 @@ const Contact = () => {
                   <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
                     Share Your Experience
                   </h2>
-                  <ReviewForm onSubmit={handleReviewSubmit} />
+                  <ReviewForm />
                 </div>
               </AnimatedSection>
               <AnimatedSection delay={200}>
                 <div>
                   <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
-                    Recent Reviews
+                    Client Reviews
                   </h2>
-                  <div className="space-y-6">
-                    {reviews.slice(0, 3).map((review, index) => (
-                      <div key={index} className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 transition-colors duration-300">
-                        <div className="flex items-center mb-4">
-                          {[...Array(review.rating)].map((_, i) => (
-                            <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
-                          ))}
-                        </div>
-                        <p className="text-gray-600 dark:text-gray-300 mb-4">
-                          "{review.text}"
-                        </p>
-                        <div>
-                          <div className="text-gray-900 dark:text-white font-semibold">
-                            {review.name}
-                          </div>
-                          <div className="text-gray-500 dark:text-gray-400 text-sm">
-                            {review.location}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <ReviewList />
                 </div>
               </AnimatedSection>
             </div>
