@@ -9,59 +9,62 @@ const Portfolio = () => {
   const categories = [
     { id: 'all', name: 'All Work' },
     { id: 'tourists', name: 'Tourists' },
-    { id: 'landscapes', name: 'Landscapes' },
+    { id: 'villas', name: 'Luxury Villas' },
     { id: 'local-life', name: 'Local Life' },
-    { id: 'desert', name: 'Desert Adventures' },
+    { id: 'horse', name: 'Horse & camel rides' },
   ];
 
   const portfolioItems = [
     {
       id: 1,
       category: 'tourists',
-      image: 'https://images.pexels.com/photos/1320684/pexels-photo-1320684.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
+      image: '/assets/images/tourists/2.jpg',
       title: 'Couple Photography in Djerba'
     },
-    {
+     {
       id: 2,
-      category: 'landscapes',
-      image: 'https://images.pexels.com/photos/1001435/pexels-photo-1001435.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
-      title: 'Sahara Desert Sunset'
-    },
-    {
-      id: 3,
-      category: 'local-life',
-      image: 'https://images.pexels.com/photos/1320714/pexels-photo-1320714.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
-      title: 'Traditional Tunisian Market'
-    },
-    {
-      id: 4,
       category: 'desert',
       image: 'https://images.pexels.com/photos/1320686/pexels-photo-1320686.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
       title: 'Camel Trekking Adventure'
     },
+   
+    {
+      id: 3,
+      category: 'horse',
+      image: '/assets/images/horse/1.jpg',
+      title: 'Traditional Tunisian Market'
+    },
+     {
+      id: 4,
+      category: 'villas',
+      image: '/assets/images/villas/1.jpg',
+      title: 'Luxury Villas in Djerba'
+    },
+   
     {
       id: 5,
-      category: 'tourists',
-      image: 'https://images.pexels.com/photos/1320683/pexels-photo-1320683.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
-      title: 'Family Beach Session'
-    },
-    {
-      id: 6,
-      category: 'landscapes',
-      image: 'https://images.pexels.com/photos/1320688/pexels-photo-1320688.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
-      title: 'Mediterranean Coastline'
-    },
-    {
-      id: 7,
-      category: 'local-life',
-      image: 'https://images.pexels.com/photos/1320712/pexels-photo-1320712.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
+      category: 'horse',
+      image: 'assets/images/horse/3.jpg',
       title: 'Artisan at Work'
     },
     {
+      id: 6,
+      category: 'villas',
+      image: '/assets/images/villas/2.jpg',
+      title: 'Luxury Villas in Djerba'
+    },
+   
+     {
+      id: 7,
+      category: 'tourists',
+      image: '/assets/images/tourists/1.jpg',
+      title: 'Couple Photography in Djerba'
+    },
+    {
       id: 8,
-      category: 'desert',
-      image: 'https://images.pexels.com/photos/1320715/pexels-photo-1320715.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
-      title: 'Stargazing in the Sahara'
+      category: 'horse',
+      image: 'assets/images/horse/2.jpg',
+      title: 'Horseback Riding in Djerba'
     },
     {
       id: 9,
@@ -71,9 +74,9 @@ const Portfolio = () => {
     },
     {
       id: 10,
-      category: 'landscapes',
-      image: 'https://images.pexels.com/photos/1320689/pexels-photo-1320689.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
-      title: 'Oasis Reflection'
+      category: 'villas',
+      image: '/assets/images/villas/5.jpg',
+      title: 'Luxury Villas in Djerba'
     },
     {
       id: 11,
@@ -83,9 +86,21 @@ const Portfolio = () => {
     },
     {
       id: 12,
-      category: 'desert',
-      image: 'https://images.pexels.com/photos/1320716/pexels-photo-1320716.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
-      title: 'Dunes at Dawn'
+      category: 'horse',
+      image: '/assets/images/horse/4.jpeg',
+      title: 'Horseback Riding in Djerba'
+    },
+    {
+      id: 13,
+      category: 'villas',
+      image: '/assets/images/villas/6.jpg',
+      title: 'Luxury Villas in Djerba'
+    },
+    {
+      id: 14,
+      category: 'villas',
+      image: '/assets/images/villas/7.jpg',
+      title: 'Luxury Villas in Djerba'
     },
   ];
 
@@ -102,7 +117,7 @@ const Portfolio = () => {
             <div className="text-center">
               <h1 className="text-5xl font-bold mb-6">Portfolio</h1>
               <p className="text-xl text-orange-100 max-w-2xl mx-auto">
-                Explore my photography work capturing the beauty of Tunisia and creating memories for visitors from around the world
+                Explore my photography work capturing the beauty of Djerba and creating memories for visitors from around the world
               </p>
             </div>
           </AnimatedSection>

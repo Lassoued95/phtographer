@@ -1,31 +1,31 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Camera, Code, MapPin, Heart, Award, Users, ArrowRight } from 'lucide-react';
+import { Camera, MapPin, Heart, Award, Users, ArrowRight } from 'lucide-react';
 import AnimatedSection from '../components/AnimatedSection';
 
 const About = () => {
-  const skills = [
-    { name: 'Photography', level: 95 },
-    { name: 'Video Production', level: 88 },
-    { name: 'Photo Editing', level: 92 },
-    { name: 'Web Development', level: 85 },
-    { name: 'Content Creation', level: 90 },
-  ];
+ const skills = [
+  { name: 'Photography', icon: Camera },
+  { name: 'Video Production', icon: Camera },
+  { name: 'Photo Editing', icon: Heart },
+  { name: 'Content Creation', icon: Users },
+];
+
 
   const achievements = [
     {
       icon: Users,
-      number: '200+',
+      number: '20+',
       text: 'Happy Clients'
     },
     {
       icon: Camera,
-      number: '1000+',
+      number: '50+',
       text: 'Photo Sessions'
     },
     {
       icon: Award,
-      number: '5',
+      number: '3',
       text: 'Years Experience'
     },
     {
@@ -48,7 +48,7 @@ const About = () => {
                   <span className="text-purple-200">Djerba, Tunisia</span>
                 </div>
                 <h1 className="text-5xl font-bold mb-6">
-                  Hi, I'm Ahmed
+                  Hi, I'm Mohamed
                 </h1>
                 <p className="text-xl text-purple-100 mb-8 leading-relaxed">
                   A passionate photographer and creative professional based in beautiful Djerba, Tunisia. 
@@ -124,33 +124,29 @@ const About = () => {
       <section className="py-20 bg-gray-50 dark:bg-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <AnimatedSection>
-              <div>
-                <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-8">
-                  Skills & Expertise
-                </h2>
-                <div className="space-y-6">
-                  {skills.map((skill, index) => (
-                    <div key={index}>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-gray-700 dark:text-gray-300 font-medium">
-                          {skill.name}
-                        </span>
-                        <span className="text-purple-600 font-semibold">
-                          {skill.level}%
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div 
-                          className="bg-purple-600 h-2 rounded-full transition-all duration-1000 ease-out"
-                          style={{ width: `${skill.level}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </AnimatedSection>
+           <AnimatedSection>
+  <div>
+    <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-8">
+      Skills & Expertise
+    </h2>
+    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+      {skills.map((skill, index) => (
+        <div
+          key={index}
+          className="flex items-center space-x-4 bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-sm hover:shadow-md transition-all"
+        >
+          <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center">
+            <skill.icon className="h-5 w-5 text-white" />
+          </div>
+          <span className="text-lg font-medium text-gray-800 dark:text-gray-100">
+            {skill.name}
+          </span>
+        </div>
+      ))}
+    </div>
+  </div>
+</AnimatedSection>
+
             <AnimatedSection delay={200}>
               <div className="grid grid-cols-2 gap-8">
                 {achievements.map((achievement, index) => (

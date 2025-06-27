@@ -1,13 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Camera, 
-  Video, 
-  Edit, 
-  Share2, 
-  Code, 
-  MapPin, 
-  Clock, 
+import {
+  Camera,
+  Video,
+  Edit,
+  Share2,
+  MapPin,
+  Clock,
   Star,
   ArrowRight,
   Check
@@ -19,36 +18,30 @@ const Services = () => {
     {
       icon: Camera,
       title: 'Tourist Photo Shoots',
-      description: 'Professional photography sessions for couples, families, and groups visiting Tunisia',
-      price: 'From 80 TND',
+      description: 'Professional photography sessions for couples, families, and groups in Djerba',
       duration: '1-2 hours',
       features: [
         '30-50 edited photos',
-        'Multiple locations',
+        'Multiple locations in Djerba',
         'Professional lighting',
-        'Quick turnaround (48h)',
         'High-resolution files'
       ]
     },
     {
       icon: Video,
       title: 'Promotional Videos',
-      description: 'High-quality video content for hotels, restaurants, and travel agencies',
-      price: 'From 200 TND',
+      description: 'High-quality video content for local businesses in Djerba',
       duration: '1-3 days',
       features: [
         'Professional videography',
-        'Drone footage included',
         'Color grading & editing',
-        'Multiple formats',
-        'Commercial license'
+        'Scriptwriting assistance'
       ]
     },
     {
       icon: Edit,
       title: 'Photo Editing & Retouching',
       description: 'Professional post-processing to enhance your photos',
-      price: 'From 10 TND per photo',
       duration: '24-48 hours',
       features: [
         'Color correction',
@@ -62,70 +55,41 @@ const Services = () => {
       icon: Share2,
       title: 'Social Media Content',
       description: 'Engaging visual content tailored for your social media platforms',
-      price: 'From 50 TND',
       duration: '1-2 days',
       features: [
         'Instagram-ready content',
         'Story templates',
         'Hashtag research',
         'Content calendar',
-        'Multiple formats'
-      ]
-    },
-    {
-      icon: Code,
-      title: 'Website Development',
-      description: 'Custom websites for small businesses in the tourism industry',
-      price: 'From 500 TND',
-      duration: '1-2 weeks',
-      features: [
-        'Responsive design',
-        'SEO optimization',
-        'Content management',
-        'Booking integration',
-        'Maintenance included'
+    
       ]
     }
   ];
 
   const packages = [
-    {
-      name: 'Tourist Essential',
-      price: '120 TND',
-      description: 'Perfect for couples and small groups',
-      features: [
-        '2-hour photo session',
-        '40 edited photos',
-        '2 locations',
-        'Online gallery',
-        'Mobile optimized'
-      ]
-    },
-    {
-      name: 'Business Promo',
-      price: '400 TND',
-      description: 'Ideal for hotels and restaurants',
-      features: [
-        'Photo + video package',
-        'Drone footage',
-        'Social media content',
-        'Commercial license',
-        'Rush delivery'
-      ]
-    },
-    {
-      name: 'Complete Branding',
-      price: '800 TND',
-      description: 'Full digital presence solution',
-      features: [
-        'Photography package',
-        'Website development',
-        'Social media setup',
-        'SEO optimization',
-        '3 months support'
-      ]
-    }
-  ];
+  {
+    name: 'Tourist Essential',
+    description: 'Perfect for couples and small groups in Djerba',
+    features: [
+      '2-hour photo session',
+      '40 edited photos',
+      '2 locations in Djerba',
+      'Online gallery',
+      'Mobile optimized'
+    ]
+  },
+  {
+    name: 'Villa Shooting',
+    description: 'Professional photo & video package for rentals and real estate in Djerba',
+    features: [
+      'Interior & exterior photography',
+      'Wide-angle and detail shots',
+      'Video walk-through',
+      'Color grading and editing',
+    ]
+  }
+];
+
 
   return (
     <div className="min-h-screen pt-16">
@@ -136,7 +100,7 @@ const Services = () => {
             <div className="text-center">
               <h1 className="text-5xl font-bold mb-6">Services</h1>
               <p className="text-xl text-teal-100 max-w-3xl mx-auto">
-                Professional photography and creative services to help you capture memories and grow your business in Tunisia
+                Professional photography and creative services to help you capture memories and promote your business in Djerba
               </p>
             </div>
           </AnimatedSection>
@@ -163,16 +127,9 @@ const Services = () => {
                       <p className="text-gray-600 dark:text-gray-300 mb-4">
                         {service.description}
                       </p>
-                      <div className="flex items-center space-x-6 mb-4">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-2xl font-bold text-teal-600">
-                            {service.price}
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400">
-                          <Clock className="h-4 w-4" />
-                          <span className="text-sm">{service.duration}</span>
-                        </div>
+                      <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400 mb-4">
+                        <Clock className="h-4 w-4" />
+                        <span className="text-sm">{service.duration}</span>
                       </div>
                       <ul className="space-y-2">
                         {service.features.map((feature, featureIndex) => (
@@ -207,7 +164,7 @@ const Services = () => {
             </div>
           </AnimatedSection>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {packages.map((pkg, index) => (
               <AnimatedSection key={index} delay={index * 200}>
                 <div className={`bg-white dark:bg-gray-900 rounded-lg p-8 shadow-lg hover:shadow-xl transition-all duration-300 ${
@@ -224,9 +181,6 @@ const Services = () => {
                     <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                       {pkg.name}
                     </h3>
-                    <div className="text-4xl font-bold text-teal-600 mb-2">
-                      {pkg.price}
-                    </div>
                     <p className="text-gray-600 dark:text-gray-300">
                       {pkg.description}
                     </p>
@@ -255,31 +209,30 @@ const Services = () => {
         </div>
       </section>
 
-      {/* Location & Availability */}
+      {/* Location Info */}
       <section className="py-20 bg-white dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <AnimatedSection>
               <div>
                 <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
-                  Based in Djerba, Covering All Tunisia
+                  Based in Djerba – Local Services Only
                 </h2>
                 <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
-                  While I'm based in beautiful Djerba, I'm available for shoots across Tunisia. 
-                  Whether you're visiting the Sahara Desert, exploring Tunis, or enjoying the 
-                  Mediterranean coast, I'll capture your perfect moments.
+                  All sessions and services are exclusively offered in Djerba. From the old medina to the beach, 
+                  I’ll help you capture timeless moments in Tunisia’s most beautiful island.
                 </p>
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3">
                     <MapPin className="h-5 w-5 text-teal-600" />
                     <span className="text-gray-700 dark:text-gray-300">
-                      Primary location: Djerba Island
+                      Location: Djerba Island only
                     </span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <Star className="h-5 w-5 text-teal-600" />
                     <span className="text-gray-700 dark:text-gray-300">
-                      Available for travel across Tunisia
+                      Specialized in local shoots
                     </span>
                   </div>
                   <div className="flex items-center space-x-3">
@@ -305,7 +258,7 @@ const Services = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA */}
       <section className="py-20 bg-teal-600">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <AnimatedSection>
@@ -313,8 +266,7 @@ const Services = () => {
               Ready to Book Your Session?
             </h2>
             <p className="text-xl text-teal-100 mb-8">
-              Let's create something beautiful together. Contact me to discuss your project 
-              and get a personalized quote.
+              Let’s create something beautiful together. Contact me now to discuss your vision!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link

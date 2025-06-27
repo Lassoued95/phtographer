@@ -1,32 +1,45 @@
+// components/ReviewForm.tsx
 import React, { useState } from 'react';
 import { Star, Send, CheckCircle } from 'lucide-react';
+import { useReviewContext } from '../contexts/ReviewContext';
 
-interface ReviewFormProps {
-  onSubmit: (review: { name: string; location: string; text: string; rating: number }) => void;
+interface Review {
+  name: string;
+  location?: string;
+  text: string;
+  rating: number;
 }
 
-const ReviewForm: React.FC<ReviewFormProps> = ({ onSubmit }) => {
-  const [formData, setFormData] = useState({
+const ReviewForm: React.FC = () => {
+  const { addReview } = useReviewContext();
+
+  const [formData, setFormData] = useState<Review>({
     name: '',
     location: '',
     text: '',
     rating: 0
   });
+
   const [hoveredRating, setHoveredRating] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.rating === 0) {
       alert('Please select a rating');
       return;
     }
-    onSubmit(formData);
-    setIsSubmitted(true);
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setFormData({ name: '', location: '', text: '', rating: 0 });
-    }, 3000);
+
+    try {
+      await addReview(formData);
+      setIsSubmitted(true);
+      setTimeout(() => {
+        setIsSubmitted(false);
+        setFormData({ name: '', location: '', text: '', rating: 0 });
+      }, 3000);
+    } catch {
+      alert('Something went wrong. Please try again.');
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

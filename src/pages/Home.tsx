@@ -7,11 +7,12 @@ const Home = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   
   const heroImages = [
-    'assets/images/horse.jpg',
-    'assets/images/bg1.jpg',
-    'assets/images/bg2.jpg',
-    'assets/images/bg3.jpg',
-    'assets/images/bg4.jpeg'
+    'assets/images/bg/bg5.jpeg',
+   
+    'assets/images/bg/bg1.jpg',
+    
+    'assets/images/bg/bg3.jpg',
+    'assets/images/bg/bg4.jpeg'
   ];
 
   const testimonials = [
@@ -153,22 +154,22 @@ const Home = () => {
             {[
               {
                 title: "Tourist Photography",
-                image: "https://images.pexels.com/photos/1320684/pexels-photo-1320684.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
+                image: "/assets/images/tourists/1.jpg",
                 delay: 0
               },
               {
-                title: "Desert Adventures",
-                image: "https://images.pexels.com/photos/1001435/pexels-photo-1001435.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
+                title: "Horse & Camel Riding",
+                image: "/assets/images/bg/bg4.jpeg",
                 delay: 200
               },
               {
-                title: "Local Life",
-                image: "https://images.pexels.com/photos/1320714/pexels-photo-1320714.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
+                title: "Luxury Villas",
+                image: "/assets/images/villas/5.jpg",
                 delay: 400
               },
               {
-                title: "Landscapes",
-                image: "https://images.pexels.com/photos/1320686/pexels-photo-1320686.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop",
+                title: "Nature",
+                image: "/assets/images/bg/bg3.jpg",
                 delay: 600
               }
             ].map((item, index) => (
@@ -226,19 +227,19 @@ const Home = () => {
               {
                 title: "Tourist Photo Shoots",
                 description: "Capture your vacation memories with professional photography sessions",
-                price: "From 80 TND",
+               
                 delay: 0
               },
               {
                 title: "Promotional Videos",
                 description: "High-quality video content for hotels, restaurants, and travel agencies",
-                price: "From 200 TND",
+               
                 delay: 200
               },
               {
                 title: "Social Media Content",
                 description: "Engaging visual content for your social media platforms",
-                price: "From 50 TND",
+               
                 delay: 400
               }
             ].map((service, index) => (
@@ -250,9 +251,7 @@ const Home = () => {
                   <p className="text-gray-600 dark:text-gray-300 mb-6">
                     {service.description}
                   </p>
-                  <div className="text-orange-600 dark:text-orange-400 font-bold text-lg">
-                    {service.price}
-                  </div>
+                  
                 </div>
               </AnimatedSection>
             ))}
