@@ -1,7 +1,8 @@
 // components/ReviewForm.tsx
 import React, { useState } from 'react';
-import { Star, Send, CheckCircle, Loader2, Upload, X, Image as ImageIcon } from 'lucide-react';
+import { Star, Send, CheckCircle, Loader2, Upload, X, Image as ImageIcon, Compress } from 'lucide-react';
 import { useReviewContext } from '../contexts/ReviewContext';
+import { compressImage, createImagePreview, validateImageFile } from '../utils/imageUtils';
 
 interface ReviewFormData {
   name: string;
@@ -25,8 +26,10 @@ const ReviewForm: React.FC = () => {
   const [hoveredRating, setHoveredRating] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [compressionInfo, setCompressionInfo] = useState<{ original: number; compressed: number } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,6 +66,7 @@ const ReviewForm: React.FC = () => {
         setIsSubmitted(false);
         setFormData({ name: '', location: '', text: '', rating: 0, image: null });
         setImagePreview(null);
+        setCompressionInfo(null);
       }, 3000);
     } catch (err) {
       console.error('Error submitting review:', err);
@@ -80,41 +84,59 @@ const ReviewForm: React.FC = () => {
     setError(null);
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        setError('Please select a valid image file');
-        return;
-      }
+    if (!file) return;
 
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setError('Image size must be less than 5MB');
-        return;
-      }
+    // Validate file
+    const validation = validateImageFile(file);
+    if (!validation.isValid) {
+      setError(validation.error || 'Invalid file');
+      return;
+    }
 
-      setFormData({ ...formData, image: file });
+    setIsProcessingImage(true);
+    setError(null);
+
+    try {
+      const originalSize = file.size;
+      
+      // Compress image for better performance
+      const compressedFile = await compressImage(file, 800, 0.8);
+      const compressedSize = compressedFile.size;
       
       // Create preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-      setError(null);
+      const preview = await createImagePreview(compressedFile);
+      
+      setFormData({ ...formData, image: compressedFile });
+      setImagePreview(preview);
+      setCompressionInfo({ original: originalSize, compressed: compressedSize });
+      
+    } catch (err) {
+      console.error('Error processing image:', err);
+      setError('Failed to process image. Please try again.');
+    } finally {
+      setIsProcessingImage(false);
     }
   };
 
   const removeImage = () => {
     setFormData({ ...formData, image: null });
     setImagePreview(null);
+    setCompressionInfo(null);
   };
 
   const handleStarClick = (rating: number) => {
     setFormData({ ...formData, rating });
     setError(null);
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   if (isSubmitted) {
@@ -153,7 +175,7 @@ const ReviewForm: React.FC = () => {
             onChange={handleChange}
             className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors duration-200"
             placeholder="Your full name"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isProcessingImage}
           />
         </div>
         <div>
@@ -168,7 +190,7 @@ const ReviewForm: React.FC = () => {
             onChange={handleChange}
             className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors duration-200"
             placeholder="e.g., UK Tourist, Local Business"
-            disabled={isSubmitting}
+            disabled={isSubmitting || isProcessingImage}
           />
         </div>
       </div>
@@ -186,7 +208,7 @@ const ReviewForm: React.FC = () => {
               onMouseEnter={() => setHoveredRating(star)}
               onMouseLeave={() => setHoveredRating(0)}
               className="p-1 transition-colors duration-200 hover:scale-110 disabled:cursor-not-allowed"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isProcessingImage}
             >
               <Star
                 className={`h-8 w-8 transition-colors duration-200 ${
@@ -216,11 +238,11 @@ const ReviewForm: React.FC = () => {
           onChange={handleChange}
           className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors duration-200 resize-none"
           placeholder="Share your experience working with me..."
-          disabled={isSubmitting}
+          disabled={isSubmitting || isProcessingImage}
         ></textarea>
       </div>
 
-      {/* Image Upload Section */}
+      {/* Optimized Image Upload Section */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Add a Photo (Optional)
@@ -234,20 +256,33 @@ const ReviewForm: React.FC = () => {
               accept="image/*"
               onChange={handleImageChange}
               className="hidden"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isProcessingImage}
             />
             <label
               htmlFor="review-image"
-              className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+              className={`flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 ${
+                isProcessingImage ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
             >
               <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <Upload className="w-8 h-8 mb-2 text-gray-400" />
-                <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                  <span className="font-semibold">Click to upload</span> or drag and drop
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  PNG, JPG or JPEG (MAX. 5MB)
-                </p>
+                {isProcessingImage ? (
+                  <>
+                    <Loader2 className="w-8 h-8 mb-2 text-blue-500 animate-spin" />
+                    <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                      Processing image...
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-8 h-8 mb-2 text-gray-400" />
+                    <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                      <span className="font-semibold">Click to upload</span> or drag and drop
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      PNG, JPG or JPEG (MAX. 10MB - will be optimized)
+                    </p>
+                  </>
+                )}
               </div>
             </label>
           </div>
@@ -268,23 +303,36 @@ const ReviewForm: React.FC = () => {
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 flex items-center">
-              <ImageIcon className="h-4 w-4 mr-1" />
-              Image ready to upload
-            </p>
+            <div className="mt-2 flex items-center justify-between">
+              <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
+                <ImageIcon className="h-4 w-4 mr-1" />
+                Image ready to upload
+              </p>
+              {compressionInfo && (
+                <p className="text-xs text-green-600 dark:text-green-400 flex items-center">
+                  <Compress className="h-3 w-3 mr-1" />
+                  Optimized: {formatFileSize(compressionInfo.original)} → {formatFileSize(compressionInfo.compressed)}
+                </p>
+              )}
+            </div>
           </div>
         )}
       </div>
 
       <button
         type="submit"
-        disabled={isSubmitting}
+        disabled={isSubmitting || isProcessingImage}
         className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-semibold py-4 rounded-lg transition-all duration-300 flex items-center justify-center transform hover:scale-105 shadow-lg hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed"
       >
         {isSubmitting ? (
           <>
             <Loader2 className="animate-spin mr-2 h-5 w-5" />
             Submitting...
+          </>
+        ) : isProcessingImage ? (
+          <>
+            <Loader2 className="animate-spin mr-2 h-5 w-5" />
+            Processing Image...
           </>
         ) : (
           <>

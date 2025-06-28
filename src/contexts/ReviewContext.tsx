@@ -81,11 +81,23 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       
       let imageUrl = '';
       
-      // Upload image if provided
+      // Upload image if provided with optimized settings
       if (review.image) {
-        console.log('Uploading image...');
-        const imageRef = ref(storage, `review-images/${Date.now()}-${review.image.name}`);
-        const uploadResult = await uploadBytes(imageRef, review.image);
+        console.log('Uploading optimized image...');
+        
+        // Create a unique filename with timestamp
+        const timestamp = Date.now();
+        const fileExtension = review.image.name.split('.').pop() || 'jpg';
+        const fileName = `review-${timestamp}.${fileExtension}`;
+        
+        // Upload with metadata for better performance
+        const imageRef = ref(storage, `review-images/${fileName}`);
+        const metadata = {
+          contentType: review.image.type,
+          cacheControl: 'public,max-age=31536000', // Cache for 1 year
+        };
+        
+        const uploadResult = await uploadBytes(imageRef, review.image, metadata);
         imageUrl = await getDownloadURL(uploadResult.ref);
         console.log('Image uploaded successfully:', imageUrl);
       }
