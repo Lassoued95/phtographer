@@ -1,10 +1,8 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import {
   Camera,
   Video,
   Edit,
-  Share2,
   MapPin,
   Clock,
   Star,
@@ -51,19 +49,7 @@ const Services = () => {
         'Artistic effects'
       ]
     },
-    {
-      icon: Share2,
-      title: 'Social Media Content',
-      description: 'Engaging visual content tailored for your social media platforms',
-      duration: '1-2 days',
-      features: [
-        'Instagram-ready content',
-        'Story templates',
-        'Hashtag research',
-        'Content calendar',
     
-      ]
-    }
   ];
 
   const packages = [

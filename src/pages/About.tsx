@@ -28,11 +28,7 @@ const About = () => {
       number: '3',
       text: 'Years Experience'
     },
-    {
-      icon: Heart,
-      number: '50+',
-      text: 'Five-Star Reviews'
-    }
+   
   ];
 
   return (

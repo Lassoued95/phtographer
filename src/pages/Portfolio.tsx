@@ -4,142 +4,71 @@ import AnimatedSection from '../components/AnimatedSection';
 
 const Portfolio = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<{ type: 'image'; src: string } | null>(null);
 
   const categories = [
     { id: 'all', name: 'All Work' },
     { id: 'tourists', name: 'Tourists' },
     { id: 'villas', name: 'Luxury Villas' },
     { id: 'local-life', name: 'Local Life' },
-    { id: 'horse', name: 'Horse & camel rides' },
+    { id: 'horse', name: 'Horse & Camel Rides' },
   ];
 
   const portfolioItems = [
-    {
-      id: 1,
-      category: 'tourists',
-      image: '/assets/images/tourists/2.jpg',
-      title: 'Couple Photography in Djerba'
-    },
-     {
-      id: 2,
-      category: 'desert',
-      image: 'https://images.pexels.com/photos/1320686/pexels-photo-1320686.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
-      title: 'Camel Trekking Adventure'
-    },
-   
-    {
-      id: 3,
-      category: 'horse',
-      image: '/assets/images/horse/1.jpg',
-      title: 'Traditional Tunisian Market'
-    },
-     {
-      id: 4,
-      category: 'villas',
-      image: '/assets/images/villas/1.jpg',
-      title: 'Luxury Villas in Djerba'
-    },
-   
-    {
-      id: 5,
-      category: 'horse',
-      image: 'assets/images/horse/3.jpg',
-      title: 'Artisan at Work'
-    },
-    {
-      id: 6,
-      category: 'villas',
-      image: '/assets/images/villas/2.jpg',
-      title: 'Luxury Villas in Djerba'
-    },
-   
-     {
-      id: 7,
-      category: 'tourists',
-      image: '/assets/images/tourists/1.jpg',
-      title: 'Couple Photography in Djerba'
-    },
-    {
-      id: 8,
-      category: 'horse',
-      image: 'assets/images/horse/2.jpg',
-      title: 'Horseback Riding in Djerba'
-    },
-    {
-      id: 9,
-      category: 'tourists',
-      image: 'https://images.pexels.com/photos/1320687/pexels-photo-1320687.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
-      title: 'Wedding Photography'
-    },
-    {
-      id: 10,
-      category: 'villas',
-      image: '/assets/images/villas/5.jpg',
-      title: 'Luxury Villas in Djerba'
-    },
-    {
-      id: 11,
-      category: 'local-life',
-      image: 'https://images.pexels.com/photos/1320713/pexels-photo-1320713.jpeg?auto=compress&cs=tinysrgb&w=800&h=600&fit=crop',
-      title: 'Traditional Architecture'
-    },
-    {
-      id: 12,
-      category: 'horse',
-      image: '/assets/images/horse/4.jpeg',
-      title: 'Horseback Riding in Djerba'
-    },
-    {
-      id: 13,
-      category: 'villas',
-      image: '/assets/images/villas/6.jpg',
-      title: 'Luxury Villas in Djerba'
-    },
-    {
-      id: 14,
-      category: 'villas',
-      image: '/assets/images/villas/7.jpg',
-      title: 'Luxury Villas in Djerba'
-    },
+    { id: 1, category: 'tourists', image: '/assets/images/tourists/2.jpg', title: 'Couple Photography in Djerba', type: 'image' },
+    { id: 2, category: 'horse', image: '/assets/images/horse/5.jpg', title: 'Camel & Horse Riding in Djerba', type: 'image' },
+    { id: 3, category: 'horse', image: '/assets/images/horse/1.jpg', title: 'Traditional Tunisian Market', type: 'image' },
+    { id: 4, category: 'villas', image: '/assets/images/villas/1.jpg', title: 'Luxury Villas in Djerba', type: 'image' },
+    { id: 5, category: 'horse', image: '/assets/images/horse/3.jpg', title: 'Artisan at Work', type: 'image' },
+    { id: 6, category: 'villas', image: '/assets/images/villas/2.jpg', title: 'Luxury Villas in Djerba', type: 'image' },
+    { id: 7, category: 'tourists', image: '/assets/images/tourists/1.jpg', title: 'Couple Photography in Djerba', type: 'image' },
+    { id: 8, category: 'horse', image: '/assets/images/horse/2.jpg', title: 'Horseback Riding in Djerba', type: 'image' },
+    { id: 9, category: 'villas', image: '/assets/images/villas/5.jpg', title: 'Luxury Villas in Djerba', type: 'image' },
+    { id: 10, category: 'horse', image: '/assets/images/horse/4.jpeg', title: 'Horseback Riding in Djerba', type: 'image' },
+    { id: 11, category: 'villas', image: '/assets/images/villas/6.jpg', title: 'Luxury Villas in Djerba', type: 'image' },
+    { id: 12, category: 'villas', image: '/assets/images/villas/7.jpg', title: 'Luxury Villas in Djerba', type: 'image' },
   ];
 
-  const filteredItems = selectedCategory === 'all' 
-    ? portfolioItems 
+  const videoShowcase = {
+    src: '/assets/images/villas/vd.mp4',
+    title: 'Djerba Villa Video Tour',
+    description: 'Take a cinematic walkthrough of one of Djerba’s most luxurious villas.',
+  };
+
+  const filteredItems = selectedCategory === 'all'
+    ? portfolioItems
     : portfolioItems.filter(item => item.category === selectedCategory);
 
   return (
     <div className="min-h-screen pt-16">
       {/* Header */}
       <section className="bg-gradient-to-r from-orange-600 to-orange-800 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <AnimatedSection>
-            <div className="text-center">
-              <h1 className="text-5xl font-bold mb-6">Portfolio</h1>
-              <p className="text-xl text-orange-100 max-w-2xl mx-auto">
-                Explore my photography work capturing the beauty of Djerba and creating memories for visitors from around the world
-              </p>
-            </div>
+            <h1 className="text-5xl font-bold mb-4">Portfolio</h1>
+            <p className="text-xl max-w-2xl mx-auto text-orange-100">
+              Explore my photography capturing the essence of Djerba and unforgettable moments.
+            </p>
           </AnimatedSection>
         </div>
       </section>
 
-      {/* Category Filter */}
-      <section className="py-12 bg-gray-50 dark:bg-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Filter Buttons */}
+      <section className="py-10 bg-gray-50 dark:bg-gray-800">
+        <div className="max-w-7xl mx-auto px-4">
           <AnimatedSection>
-            <div className="flex flex-wrap justify-center gap-4">
-              {categories.map((category) => (
+            <div className="flex flex-wrap justify-center gap-3">
+              {categories.map((cat) => (
                 <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
-                  className={`px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
-                    selectedCategory === category.id
-                      ? 'bg-orange-600 text-white shadow-lg'
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`px-6 py-2 rounded-full font-medium transition ${
+                    selectedCategory === cat.id
+                      ? 'bg-orange-600 text-white shadow'
                       : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-gray-600'
                   }`}
                 >
-                  {category.name}
+                  {cat.name}
                 </button>
               ))}
             </div>
@@ -148,49 +77,61 @@ const Portfolio = () => {
       </section>
 
       {/* Portfolio Grid */}
-      <section className="py-20 bg-white dark:bg-gray-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredItems.map((item, index) => (
-              <AnimatedSection key={item.id} delay={index * 100}>
-                <div 
-                  className="group relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer"
-                  onClick={() => setSelectedImage(item.image)}
-                >
-                  <div className="aspect-w-4 aspect-h-3 h-64">
-                    <img
-                      src={item.image}
-                      alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                    />
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="absolute bottom-0 left-0 right-0 p-6">
-                      <h3 className="text-white font-semibold text-lg">
-                        {item.title}
-                      </h3>
-                    </div>
-                  </div>
+      <section className="py-14 bg-white dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {filteredItems.map((item, idx) => (
+            <AnimatedSection key={item.id} delay={idx * 100}>
+              <div
+                className="group relative overflow-hidden rounded-xl shadow hover:shadow-lg cursor-pointer"
+                onClick={() => setSelectedItem({ type: 'image', src: item.image })}
+              >
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+                  <h3 className="text-white font-semibold text-sm">{item.title}</h3>
                 </div>
-              </AnimatedSection>
-            ))}
-          </div>
+              </div>
+            </AnimatedSection>
+          ))}
+        </div>
+      </section>
+
+      {/* Video Showcase */}
+      <section className="bg-gray-100 dark:bg-gray-800 py-20">
+        <div className="max-w-5xl mx-auto px-4 text-center">
+          <AnimatedSection>
+            <h2 className="text-3xl font-bold mb-4">{videoShowcase.title}</h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-xl mx-auto">
+              {videoShowcase.description}
+            </p>
+            <div className="rounded-xl overflow-hidden shadow-lg max-w-4xl mx-auto">
+              <video
+                src={videoShowcase.src}
+                controls
+                className="w-full h-auto"
+                poster="/assets/images/villas/1.jpg"
+              />
+            </div>
+          </AnimatedSection>
         </div>
       </section>
 
       {/* Lightbox */}
-      {selectedImage && (
+      {selectedItem && (
         <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
           <div className="relative max-w-4xl max-h-full">
             <button
-              onClick={() => setSelectedImage(null)}
-              className="absolute top-4 right-4 z-10 p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors duration-200"
+              onClick={() => setSelectedItem(null)}
+              className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full"
             >
               <X className="h-6 w-6 text-white" />
             </button>
             <img
-              src={selectedImage}
-              alt="Portfolio item"
+              src={selectedItem.src}
+              alt="Preview"
               className="max-w-full max-h-full object-contain rounded-lg"
             />
           </div>

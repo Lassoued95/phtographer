@@ -2,44 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Camera, MapPin, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import AnimatedSection from '../components/AnimatedSection';
+import ReviewList from '../components/ReviewList';
 
 const Home = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  
+
   const heroImages = [
     'assets/images/bg/bg5.jpeg',
-   
     'assets/images/bg/bg1.jpg',
-    
     'assets/images/bg/bg3.jpg',
     'assets/images/bg/bg4.jpeg'
   ];
 
-  const testimonials = [
-    {
-      name: "Sarah Johnson",
-      location: "UK Tourist",
-      text: "Amazing photos of our Djerba vacation! Professional and creative.",
-      rating: 5,
-    },
-    {
-      name: "Hotel Djerba Plaza",
-      location: "Tourism Partner",
-      text: "Excellent promotional content that boosted our bookings significantly.",
-      rating: 5,
-    },
-    {
-      name: "Marco Rossi",
-      location: "Italian Traveler",
-      text: "Captured the essence of Tunisia beautifully. Highly recommended!",
-      rating: 5,
-    },
-  ];
-
-  // Auto-change background every 3 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentImageIndex((prevIndex) => 
+      setCurrentImageIndex((prevIndex) =>
         prevIndex === heroImages.length - 1 ? 0 : prevIndex + 1
       );
     }, 3000);
@@ -59,7 +36,6 @@ const Home = () => {
     <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors duration-300">
       {/* Hero Section with Slideshow */}
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Images */}
         {heroImages.map((image, index) => (
           <div
             key={index}
@@ -71,8 +47,7 @@ const Home = () => {
             <div className="absolute inset-0 bg-black/40"></div>
           </div>
         ))}
-        
-        {/* Navigation Arrows */}
+
         <button
           onClick={prevImage}
           className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 p-3 bg-white/20 hover:bg-white/30 rounded-full transition-all duration-200 backdrop-blur-sm"
@@ -88,7 +63,6 @@ const Home = () => {
           <ChevronRight className="h-6 w-6 text-white" />
         </button>
 
-        {/* Slide Indicators */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex space-x-2">
           {heroImages.map((_, index) => (
             <button
@@ -101,7 +75,7 @@ const Home = () => {
             />
           ))}
         </div>
-        
+
         <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto">
           <AnimatedSection>
             <div className="flex items-center justify-center mb-6">
@@ -151,28 +125,23 @@ const Home = () => {
           </AnimatedSection>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                title: "Tourist Photography",
-                image: "/assets/images/tourists/1.jpg",
-                delay: 0
-              },
-              {
-                title: "Horse & Camel Riding",
-                image: "/assets/images/bg/bg4.jpeg",
-                delay: 200
-              },
-              {
-                title: "Luxury Villas",
-                image: "/assets/images/villas/5.jpg",
-                delay: 400
-              },
-              {
-                title: "Nature",
-                image: "/assets/images/bg/bg3.jpg",
-                delay: 600
-              }
-            ].map((item, index) => (
+            {[{
+              title: "Tourist Photography",
+              image: "/assets/images/tourists/1.jpg",
+              delay: 0
+            }, {
+              title: "Horse & Camel Riding",
+              image: "/assets/images/bg/bg4.jpeg",
+              delay: 200
+            }, {
+              title: "Luxury Villas",
+              image: "/assets/images/villas/5.jpg",
+              delay: 400
+            }, {
+              title: "Nature",
+              image: "/assets/images/bg/bg3.jpg",
+              delay: 600
+            }].map((item, index) => (
               <AnimatedSection key={index} delay={item.delay}>
                 <div className="group relative overflow-hidden rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
                   <div className="aspect-w-4 aspect-h-3 h-64">
@@ -223,26 +192,19 @@ const Home = () => {
           </AnimatedSection>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                title: "Tourist Photo Shoots",
-                description: "Capture your vacation memories with professional photography sessions",
-               
-                delay: 0
-              },
-              {
-                title: "Promotional Videos",
-                description: "High-quality video content for hotels, restaurants, and travel agencies",
-               
-                delay: 200
-              },
-              {
-                title: "Social Media Content",
-                description: "Engaging visual content for your social media platforms",
-               
-                delay: 400
-              }
-            ].map((service, index) => (
+            {[{
+              title: "Tourist Photo Shoots",
+              description: "Capture your vacation memories with professional photography sessions",
+              delay: 0
+            }, {
+              title: "Promotional Videos",
+              description: "High-quality video content for hotels, restaurants, and travel agencies",
+              delay: 200
+            }, {
+              title: "Social Media Content",
+              description: "Engaging visual content for your social media platforms",
+              delay: 400
+            }].map((service, index) => (
               <AnimatedSection key={index} delay={service.delay}>
                 <div className="bg-gray-50 dark:bg-gray-800 p-8 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 dark:border-gray-700">
                   <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
@@ -251,7 +213,6 @@ const Home = () => {
                   <p className="text-gray-600 dark:text-gray-300 mb-6">
                     {service.description}
                   </p>
-                  
                 </div>
               </AnimatedSection>
             ))}
@@ -271,7 +232,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Dynamic Reviews */}
       <section className="py-20 bg-gray-50 dark:bg-gray-800 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <AnimatedSection>
@@ -285,30 +246,7 @@ const Home = () => {
             </div>
           </AnimatedSection>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <AnimatedSection key={index} delay={index * 200}>
-                <div className="bg-white dark:bg-gray-900 p-8 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-gray-700">
-                  <div className="flex items-center mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-                  <p className="text-gray-600 dark:text-gray-300 mb-6">
-                    "{testimonial.text}"
-                  </p>
-                  <div>
-                    <div className="text-gray-900 dark:text-white font-semibold">
-                      {testimonial.name}
-                    </div>
-                    <div className="text-gray-500 dark:text-gray-400 text-sm">
-                      {testimonial.location}
-                    </div>
-                  </div>
-                </div>
-              </AnimatedSection>
-            ))}
-          </div>
+          <ReviewList />
 
           <AnimatedSection delay={600}>
             <div className="text-center mt-12">
