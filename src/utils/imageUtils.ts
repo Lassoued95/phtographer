@@ -1,12 +1,12 @@
-// Optimized image utility functions for faster compression and upload
-export const compressImage = (file: File, maxWidth: number = 600, quality: number = 0.7): Promise<File> => {
+// Ultra-optimized image utility functions for lightning-fast uploads
+export const compressImage = (file: File, maxWidth: number = 400, quality: number = 0.6): Promise<File> => {
   return new Promise((resolve) => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const img = new Image();
     
     img.onload = () => {
-      // More aggressive compression for faster uploads
+      // Ultra-aggressive compression for sub-3-second uploads
       const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
       const newWidth = Math.floor(img.width * ratio);
       const newHeight = Math.floor(img.height * ratio);
@@ -14,10 +14,9 @@ export const compressImage = (file: File, maxWidth: number = 600, quality: numbe
       canvas.width = newWidth;
       canvas.height = newHeight;
       
-      // Optimize canvas rendering
+      // Fastest rendering settings
       if (ctx) {
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
+        ctx.imageSmoothingEnabled = false; // Faster rendering
         ctx.drawImage(img, 0, 0, newWidth, newHeight);
       }
       
@@ -34,7 +33,7 @@ export const compressImage = (file: File, maxWidth: number = 600, quality: numbe
           }
         },
         'image/jpeg',
-        quality
+        quality // Lower quality for faster upload
       );
     };
     
@@ -57,20 +56,23 @@ export const validateImageFile = (file: File): { isValid: boolean; error?: strin
     return { isValid: false, error: 'Please select a valid image file' };
   }
   
-  // Reduced max size for faster uploads
-  if (file.size > 5 * 1024 * 1024) {
-    return { isValid: false, error: 'Image size must be less than 5MB' };
+  // Reduced max size for ultra-fast uploads
+  if (file.size > 3 * 1024 * 1024) {
+    return { isValid: false, error: 'Image size must be less than 3MB for fast upload' };
   }
   
   return { isValid: true };
 };
 
-// Convert file to base64 for faster small image uploads
-export const fileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+// Ultra-fast compression for thumbnails
+export const createThumbnail = (file: File): Promise<File> => {
+  return compressImage(file, 200, 0.5); // Very small for instant upload
+};
+
+// Progressive upload: upload thumbnail first, then full image
+export const progressiveCompress = (file: File): Promise<{ thumbnail: File; compressed: File }> => {
+  return Promise.all([
+    createThumbnail(file),
+    compressImage(file, 400, 0.6)
+  ]).then(([thumbnail, compressed]) => ({ thumbnail, compressed }));
 };

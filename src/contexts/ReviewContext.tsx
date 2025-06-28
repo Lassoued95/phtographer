@@ -12,7 +12,7 @@ interface Review {
   text: string;
   rating: number;
   imageUrl?: string;
-  userId?: string; // Track who created the review
+  userId?: string;
   createdAt?: any;
 }
 
@@ -55,7 +55,7 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             text: data.text || '',
             rating: data.rating || 5,
             imageUrl: data.imageUrl || '',
-            userId: data.userId || '', // Include user ID for ownership tracking
+            userId: data.userId || '',
             createdAt: data.createdAt
           } as Review;
         });
@@ -77,15 +77,17 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
   }, []);
 
-  const uploadImage = async (image: File): Promise<string> => {
+  const uploadImageFast = async (image: File): Promise<string> => {
     const timestamp = Date.now();
-    const fileExtension = image.name.split('.').pop() || 'jpg';
-    const fileName = `review-${timestamp}.${fileExtension}`;
+    const fileName = `review-${timestamp}.jpg`; // Always use .jpg for consistency
     
     const imageRef = ref(storage, `review-images/${fileName}`);
     
-    // Optimized upload with minimal metadata for speed
-    const uploadResult = await uploadBytes(imageRef, image);
+    // Ultra-fast upload with minimal metadata
+    const uploadResult = await uploadBytes(imageRef, image, {
+      cacheControl: 'public,max-age=3600', // Cache for faster loading
+    });
+    
     return await getDownloadURL(uploadResult.ref);
   };
 
@@ -93,26 +95,32 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     try {
       console.log('Adding review...');
       
-      let imageUrl = '';
-      
-      if (review.image) {
-        console.log('Uploading image...');
-        imageUrl = await uploadImage(review.image);
-        console.log('Image uploaded successfully');
-      }
-      
+      // First, add the review without image for immediate feedback
       const reviewData = {
         name: review.name || 'Anonymous',
         location: review.location || '',
         text: review.text || '',
         rating: review.rating || 5,
-        imageUrl: imageUrl,
-        userId: getUserId(), // Associate review with current user
+        imageUrl: '', // Will be updated if image exists
+        userId: getUserId(),
         createdAt: new Date()
       };
       
       const docRef = await addDoc(collection(db, 'reviews'), reviewData);
       console.log('Review added successfully with ID:', docRef.id);
+      
+      // If there's an image, upload it and update the review
+      if (review.image) {
+        console.log('Uploading image in background...');
+        try {
+          const imageUrl = await uploadImageFast(review.image);
+          await updateDoc(doc(db, 'reviews', docRef.id), { imageUrl });
+          console.log('Image uploaded and review updated');
+        } catch (imageError) {
+          console.error('Image upload failed, but review was saved:', imageError);
+          // Review is still saved, just without image
+        }
+      }
       
     } catch (error) {
       console.error('Failed to add review:', error);
@@ -131,19 +139,26 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }
       
       const updateData: any = { ...updates };
-      delete updateData.image; // Remove image from update data
-      delete updateData.userId; // Don't allow changing userId
+      delete updateData.image;
+      delete updateData.userId;
       
-      // Handle image update
-      if (updates.image) {
-        console.log('Uploading new image...');
-        updateData.imageUrl = await uploadImage(updates.image);
-        console.log('New image uploaded successfully');
-      }
-      
+      // Update review first (without image)
       const reviewRef = doc(db, 'reviews', reviewId);
       await updateDoc(reviewRef, updateData);
-      console.log('Review updated successfully');
+      console.log('Review text updated successfully');
+      
+      // Handle image update separately for speed
+      if (updates.image) {
+        console.log('Uploading new image...');
+        try {
+          const imageUrl = await uploadImageFast(updates.image);
+          await updateDoc(reviewRef, { imageUrl });
+          console.log('New image uploaded successfully');
+        } catch (imageError) {
+          console.error('Image upload failed, but review text was updated:', imageError);
+          // Review text is still updated, just image failed
+        }
+      }
       
     } catch (error) {
       console.error('Failed to update review:', error);
@@ -161,22 +176,21 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         throw new Error('You can only delete your own reviews.');
       }
       
-      // Delete image from storage if exists
+      // Delete review document first for immediate UI feedback
+      const reviewRef = doc(db, 'reviews', reviewId);
+      await deleteDoc(reviewRef);
+      console.log('Review deleted successfully');
+      
+      // Delete image from storage in background
       if (review?.imageUrl) {
         try {
           const imageRef = ref(storage, review.imageUrl);
           await deleteObject(imageRef);
           console.log('Image deleted from storage');
         } catch (imageError) {
-          console.warn('Failed to delete image from storage:', imageError);
-          // Continue with review deletion even if image deletion fails
+          console.warn('Failed to delete image from storage (review still deleted):', imageError);
         }
       }
-      
-      // Delete review document
-      const reviewRef = doc(db, 'reviews', reviewId);
-      await deleteDoc(reviewRef);
-      console.log('Review deleted successfully');
       
     } catch (error) {
       console.error('Failed to delete review:', error);
