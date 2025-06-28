@@ -1,6 +1,6 @@
 // components/ReviewForm.tsx
 import React, { useState, useEffect } from 'react';
-import { Star, Send, CheckCircle, Loader2, Upload, X, Image as ImageIcon, Compass as Compress, Edit, Save, Ambulance as Cancel } from 'lucide-react';
+import { Star, Send, CheckCircle, Loader2, Upload, X, Image as ImageIcon, Compass as Compress, Edit, Save, XCircle as Cancel } from 'lucide-react';
 import { useReviewContext } from '../contexts/ReviewContext';
 import { compressImage, createImagePreview, validateImageFile } from '../utils/imageUtils';
 
@@ -189,8 +189,11 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ editingReview, onCancelEdit }) 
         <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
           Thank You!
         </h3>
-        <p className="text-gray-600 dark:text-gray-300">
+        <p className="text-gray-600 dark:text-gray-300 mb-4">
           Your review has been submitted successfully and will appear shortly.
+        </p>
+        <p className="text-sm text-blue-600 dark:text-blue-400">
+          💡 Tip: You can edit or delete your review anytime by clicking the menu (⋮) on your review.
         </p>
       </div>
     );
@@ -204,7 +207,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ editingReview, onCancelEdit }) 
           {editingReview ? (
             <span className="flex items-center">
               <Edit className="h-6 w-6 mr-2 text-blue-600" />
-              Edit Review
+              Edit Your Review
             </span>
           ) : (
             'Share Your Experience'
@@ -220,6 +223,16 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ editingReview, onCancelEdit }) 
           </button>
         )}
       </div>
+
+      {/* User ownership notice for new reviews */}
+      {!editingReview && (
+        <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <p className="text-blue-700 dark:text-blue-300 text-sm">
+            <strong>Note:</strong> You'll be able to edit or delete your review after submitting it. 
+            Your review will be linked to this browser session.
+          </p>
+        </div>
+      )}
 
       {error && (
         <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">

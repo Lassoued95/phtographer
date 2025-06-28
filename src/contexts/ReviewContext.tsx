@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { collection, onSnapshot, addDoc, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, storage } from '../firebaseConfig';
+import { getUserId } from '../utils/userUtils';
 
 interface Review {
   id?: string;
@@ -11,12 +12,13 @@ interface Review {
   text: string;
   rating: number;
   imageUrl?: string;
+  userId?: string; // Track who created the review
   createdAt?: any;
 }
 
 interface ReviewContextType {
   reviews: Review[];
-  addReview: (review: Omit<Review, 'id' | 'createdAt' | 'imageUrl'> & { image?: File | null }) => Promise<void>;
+  addReview: (review: Omit<Review, 'id' | 'createdAt' | 'imageUrl' | 'userId'> & { image?: File | null }) => Promise<void>;
   updateReview: (reviewId: string, updates: Partial<Review> & { image?: File | null }) => Promise<void>;
   deleteReview: (reviewId: string) => Promise<void>;
   loading: boolean;
@@ -53,6 +55,7 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             text: data.text || '',
             rating: data.rating || 5,
             imageUrl: data.imageUrl || '',
+            userId: data.userId || '', // Include user ID for ownership tracking
             createdAt: data.createdAt
           } as Review;
         });
@@ -86,7 +89,7 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     return await getDownloadURL(uploadResult.ref);
   };
 
-  const addReview = async (review: Omit<Review, 'id' | 'createdAt' | 'imageUrl'> & { image?: File | null }) => {
+  const addReview = async (review: Omit<Review, 'id' | 'createdAt' | 'imageUrl' | 'userId'> & { image?: File | null }) => {
     try {
       console.log('Adding review...');
       
@@ -104,6 +107,7 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         text: review.text || '',
         rating: review.rating || 5,
         imageUrl: imageUrl,
+        userId: getUserId(), // Associate review with current user
         createdAt: new Date()
       };
       
@@ -120,8 +124,15 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     try {
       console.log('Updating review:', reviewId);
       
+      // Check if user owns this review
+      const review = reviews.find(r => r.id === reviewId);
+      if (!review || review.userId !== getUserId()) {
+        throw new Error('You can only edit your own reviews.');
+      }
+      
       const updateData: any = { ...updates };
       delete updateData.image; // Remove image from update data
+      delete updateData.userId; // Don't allow changing userId
       
       // Handle image update
       if (updates.image) {
@@ -136,7 +147,7 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       
     } catch (error) {
       console.error('Failed to update review:', error);
-      throw new Error('Failed to update review. Please try again.');
+      throw error instanceof Error ? error : new Error('Failed to update review. Please try again.');
     }
   };
 
@@ -144,8 +155,11 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     try {
       console.log('Deleting review:', reviewId);
       
-      // Find the review to get image URL for deletion
+      // Check if user owns this review
       const review = reviews.find(r => r.id === reviewId);
+      if (!review || review.userId !== getUserId()) {
+        throw new Error('You can only delete your own reviews.');
+      }
       
       // Delete image from storage if exists
       if (review?.imageUrl) {
@@ -166,7 +180,7 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       
     } catch (error) {
       console.error('Failed to delete review:', error);
-      throw new Error('Failed to delete review. Please try again.');
+      throw error instanceof Error ? error : new Error('Failed to delete review. Please try again.');
     }
   };
 
