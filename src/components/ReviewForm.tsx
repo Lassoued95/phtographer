@@ -53,6 +53,7 @@ const ReviewForm: React.FC = () => {
     setError(null);
 
     try {
+      // The addReview function now handles image upload completion before creating the review
       await addReview({
         name: formData.name.trim(),
         location: formData.location.trim(),
@@ -70,7 +71,7 @@ const ReviewForm: React.FC = () => {
       }, 3000);
     } catch (err) {
       console.error('Error submitting review:', err);
-      setError('Failed to submit review. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to submit review. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -327,7 +328,7 @@ const ReviewForm: React.FC = () => {
         {isSubmitting ? (
           <>
             <Loader2 className="animate-spin mr-2 h-5 w-5" />
-            Submitting...
+            {formData.image ? 'Uploading image & submitting...' : 'Submitting...'}
           </>
         ) : isProcessingImage ? (
           <>

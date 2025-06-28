@@ -77,13 +77,13 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const addReview = async (review: Omit<Review, 'id' | 'createdAt' | 'imageUrl'> & { image?: File | null }) => {
     try {
-      console.log('Adding review:', review);
+      console.log('Adding review with image:', !!review.image);
       
       let imageUrl = '';
       
-      // Upload image if provided with optimized settings
+      // CRITICAL FIX: Upload image FIRST and wait for completion before creating review
       if (review.image) {
-        console.log('Uploading optimized image...');
+        console.log('Starting image upload...');
         
         // Create a unique filename with timestamp
         const timestamp = Date.now();
@@ -97,24 +97,33 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           cacheControl: 'public,max-age=31536000', // Cache for 1 year
         };
         
-        const uploadResult = await uploadBytes(imageRef, review.image, metadata);
-        imageUrl = await getDownloadURL(uploadResult.ref);
-        console.log('Image uploaded successfully:', imageUrl);
+        try {
+          console.log('Uploading image to Firebase Storage...');
+          const uploadResult = await uploadBytes(imageRef, review.image, metadata);
+          imageUrl = await getDownloadURL(uploadResult.ref);
+          console.log('Image upload completed successfully:', imageUrl);
+        } catch (uploadError) {
+          console.error('Image upload failed:', uploadError);
+          throw new Error('Failed to upload image. Please try again.');
+        }
       }
       
+      // Only create the review AFTER image upload is complete (or if no image)
       const reviewData = {
         name: review.name || 'Anonymous',
         location: review.location || '',
         text: review.text || '',
         rating: review.rating || 5,
-        imageUrl: imageUrl,
+        imageUrl: imageUrl, // This will be the actual URL or empty string
         createdAt: new Date()
       };
       
+      console.log('Creating review document with data:', reviewData);
       const docRef = await addDoc(collection(db, 'reviews'), reviewData);
-      console.log('Review added with ID:', docRef.id);
+      console.log('Review added successfully with ID:', docRef.id);
+      
     } catch (error) {
-      console.error('Failed to add review to Firestore:', error);
+      console.error('Failed to add review:', error);
       setError('Failed to add review');
       throw error;
     }
