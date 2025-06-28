@@ -1,13 +1,12 @@
 // components/ReviewList.tsx
 import React, { useState } from 'react';
-import { Star, Loader2, AlertCircle, Image as ImageIcon, X, Edit, Trash2, MoreVertical, Lock } from 'lucide-react';
+import { Star, Loader2, AlertCircle, Edit, Trash2, MoreVertical, Lock } from 'lucide-react';
 import { useReviewContext } from '../contexts/ReviewContext';
 import { isReviewOwner } from '../utils/userUtils';
 import ReviewForm from './ReviewForm';
 
 const ReviewList: React.FC = () => {
   const { reviews, deleteReview, loading, error } = useReviewContext();
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [editingReview, setEditingReview] = useState<any>(null);
   const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null);
   const [showMenuForReview, setShowMenuForReview] = useState<string | null>(null);
@@ -185,25 +184,6 @@ const ReviewList: React.FC = () => {
               <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
                 "{review.text}"
               </p>
-
-              {/* Display uploaded image with optimized loading */}
-              {review.imageUrl && (
-                <div className="mb-4">
-                  <div className="relative w-full max-w-md">
-                    <img
-                      src={review.imageUrl}
-                      alt="Review photo"
-                      className="w-full h-48 object-cover rounded-lg shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
-                      onClick={() => setSelectedImage(review.imageUrl!)}
-                      loading="lazy"
-                    />
-                    <div className="absolute bottom-2 right-2 bg-black/50 text-white px-2 py-1 rounded text-xs flex items-center">
-                      <ImageIcon className="h-3 w-3 mr-1" />
-                      Photo
-                    </div>
-                  </div>
-                </div>
-              )}
               
               {review.createdAt && (
                 <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
@@ -218,25 +198,6 @@ const ReviewList: React.FC = () => {
           );
         })}
       </div>
-
-      {/* Image Lightbox Modal */}
-      {selectedImage && (
-        <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
-          <div className="relative max-w-4xl max-h-full">
-            <button
-              onClick={() => setSelectedImage(null)}
-              className="absolute top-4 right-4 z-10 p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors duration-200"
-            >
-              <X className="h-6 w-6 text-white" />
-            </button>
-            <img
-              src={selectedImage}
-              alt="Review photo enlarged"
-              className="max-w-full max-h-full object-contain rounded-lg"
-            />
-          </div>
-        </div>
-      )}
 
       {/* Click outside to close menu */}
       {showMenuForReview && (
