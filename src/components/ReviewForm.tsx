@@ -1,6 +1,6 @@
 // components/ReviewForm.tsx
-import React, { useState } from 'react';
-import { Star, Send, CheckCircle, Loader2, Upload, X, Image as ImageIcon, Compass as Compress } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Star, Send, CheckCircle, Loader2, Upload, X, Image as ImageIcon, Compress, Edit, Save, Cancel } from 'lucide-react';
 import { useReviewContext } from '../contexts/ReviewContext';
 import { compressImage, createImagePreview, validateImageFile } from '../utils/imageUtils';
 
@@ -12,8 +12,20 @@ interface ReviewFormData {
   image?: File | null;
 }
 
-const ReviewForm: React.FC = () => {
-  const { addReview } = useReviewContext();
+interface ReviewFormProps {
+  editingReview?: {
+    id: string;
+    name: string;
+    location?: string;
+    text: string;
+    rating: number;
+    imageUrl?: string;
+  } | null;
+  onCancelEdit?: () => void;
+}
+
+const ReviewForm: React.FC<ReviewFormProps> = ({ editingReview, onCancelEdit }) => {
+  const { addReview, updateReview } = useReviewContext();
 
   const [formData, setFormData] = useState<ReviewFormData>({
     name: '',
@@ -30,6 +42,25 @@ const ReviewForm: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [compressionInfo, setCompressionInfo] = useState<{ original: number; compressed: number } | null>(null);
+
+  // Populate form when editing
+  useEffect(() => {
+    if (editingReview) {
+      setFormData({
+        name: editingReview.name,
+        location: editingReview.location || '',
+        text: editingReview.text,
+        rating: editingReview.rating,
+        image: null
+      });
+      setImagePreview(editingReview.imageUrl || null);
+    } else {
+      // Reset form for new review
+      setFormData({ name: '', location: '', text: '', rating: 0, image: null });
+      setImagePreview(null);
+      setCompressionInfo(null);
+    }
+  }, [editingReview]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,22 +84,35 @@ const ReviewForm: React.FC = () => {
     setError(null);
 
     try {
-      // The addReview function now handles image upload completion before creating the review
-      await addReview({
-        name: formData.name.trim(),
-        location: formData.location.trim(),
-        text: formData.text.trim(),
-        rating: formData.rating,
-        image: formData.image
-      });
-      
-      setIsSubmitted(true);
-      setTimeout(() => {
-        setIsSubmitted(false);
-        setFormData({ name: '', location: '', text: '', rating: 0, image: null });
-        setImagePreview(null);
-        setCompressionInfo(null);
-      }, 3000);
+      if (editingReview) {
+        // Update existing review
+        await updateReview(editingReview.id, {
+          name: formData.name.trim(),
+          location: formData.location.trim(),
+          text: formData.text.trim(),
+          rating: formData.rating,
+          image: formData.image
+        });
+        
+        if (onCancelEdit) onCancelEdit();
+      } else {
+        // Add new review
+        await addReview({
+          name: formData.name.trim(),
+          location: formData.location.trim(),
+          text: formData.text.trim(),
+          rating: formData.rating,
+          image: formData.image
+        });
+        
+        setIsSubmitted(true);
+        setTimeout(() => {
+          setIsSubmitted(false);
+          setFormData({ name: '', location: '', text: '', rating: 0, image: null });
+          setImagePreview(null);
+          setCompressionInfo(null);
+        }, 3000);
+      }
     } catch (err) {
       console.error('Error submitting review:', err);
       setError(err instanceof Error ? err.message : 'Failed to submit review. Please try again.');
@@ -89,7 +133,6 @@ const ReviewForm: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file
     const validation = validateImageFile(file);
     if (!validation.isValid) {
       setError(validation.error || 'Invalid file');
@@ -102,11 +145,10 @@ const ReviewForm: React.FC = () => {
     try {
       const originalSize = file.size;
       
-      // Compress image for better performance
-      const compressedFile = await compressImage(file, 800, 0.8);
+      // More aggressive compression for faster uploads (600px, 70% quality)
+      const compressedFile = await compressImage(file, 600, 0.7);
       const compressedSize = compressedFile.size;
       
-      // Create preview
       const preview = await createImagePreview(compressedFile);
       
       setFormData({ ...formData, image: compressedFile });
@@ -123,7 +165,7 @@ const ReviewForm: React.FC = () => {
 
   const removeImage = () => {
     setFormData({ ...formData, image: null });
-    setImagePreview(null);
+    setImagePreview(editingReview?.imageUrl || null);
     setCompressionInfo(null);
   };
 
@@ -140,7 +182,7 @@ const ReviewForm: React.FC = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  if (isSubmitted) {
+  if (isSubmitted && !editingReview) {
     return (
       <div className="text-center py-12">
         <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
@@ -156,6 +198,29 @@ const ReviewForm: React.FC = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Form Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          {editingReview ? (
+            <span className="flex items-center">
+              <Edit className="h-6 w-6 mr-2 text-blue-600" />
+              Edit Review
+            </span>
+          ) : (
+            'Share Your Experience'
+          )}
+        </h2>
+        {editingReview && onCancelEdit && (
+          <button
+            type="button"
+            onClick={onCancelEdit}
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+          >
+            <X className="h-6 w-6" />
+          </button>
+        )}
+      </div>
+
       {error && (
         <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
           <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>
@@ -246,7 +311,7 @@ const ReviewForm: React.FC = () => {
       {/* Optimized Image Upload Section */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-          Add a Photo (Optional)
+          {editingReview ? 'Update Photo (Optional)' : 'Add a Photo (Optional)'}
         </label>
         
         {!imagePreview ? (
@@ -270,7 +335,7 @@ const ReviewForm: React.FC = () => {
                   <>
                     <Loader2 className="w-8 h-8 mb-2 text-blue-500 animate-spin" />
                     <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-                      Processing image...
+                      Optimizing image...
                     </p>
                   </>
                 ) : (
@@ -280,7 +345,7 @@ const ReviewForm: React.FC = () => {
                       <span className="font-semibold">Click to upload</span> or drag and drop
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      PNG, JPG or JPEG (MAX. 10MB - will be optimized)
+                      PNG, JPG or JPEG (MAX. 5MB - optimized for fast upload)
                     </p>
                   </>
                 )}
@@ -307,7 +372,7 @@ const ReviewForm: React.FC = () => {
             <div className="mt-2 flex items-center justify-between">
               <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
                 <ImageIcon className="h-4 w-4 mr-1" />
-                Image ready to upload
+                {formData.image ? 'New image ready' : 'Current image'}
               </p>
               {compressionInfo && (
                 <p className="text-xs text-green-600 dark:text-green-400 flex items-center">
@@ -320,28 +385,51 @@ const ReviewForm: React.FC = () => {
         )}
       </div>
 
-      <button
-        type="submit"
-        disabled={isSubmitting || isProcessingImage}
-        className="w-full bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-semibold py-4 rounded-lg transition-all duration-300 flex items-center justify-center transform hover:scale-105 shadow-lg hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed"
-      >
-        {isSubmitting ? (
-          <>
-            <Loader2 className="animate-spin mr-2 h-5 w-5" />
-            {formData.image ? 'Uploading image & submitting...' : 'Submitting...'}
-          </>
-        ) : isProcessingImage ? (
-          <>
-            <Loader2 className="animate-spin mr-2 h-5 w-5" />
-            Processing Image...
-          </>
-        ) : (
-          <>
-            Submit Review
-            <Send className="ml-2 h-5 w-5" />
-          </>
+      <div className="flex gap-4">
+        <button
+          type="submit"
+          disabled={isSubmitting || isProcessingImage}
+          className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white font-semibold py-4 rounded-lg transition-all duration-300 flex items-center justify-center transform hover:scale-105 shadow-lg hover:shadow-xl disabled:transform-none disabled:cursor-not-allowed"
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 className="animate-spin mr-2 h-5 w-5" />
+              {editingReview ? 'Updating...' : (formData.image ? 'Uploading & submitting...' : 'Submitting...')}
+            </>
+          ) : isProcessingImage ? (
+            <>
+              <Loader2 className="animate-spin mr-2 h-5 w-5" />
+              Optimizing Image...
+            </>
+          ) : (
+            <>
+              {editingReview ? (
+                <>
+                  <Save className="mr-2 h-5 w-5" />
+                  Update Review
+                </>
+              ) : (
+                <>
+                  Submit Review
+                  <Send className="ml-2 h-5 w-5" />
+                </>
+              )}
+            </>
+          )}
+        </button>
+        
+        {editingReview && onCancelEdit && (
+          <button
+            type="button"
+            onClick={onCancelEdit}
+            disabled={isSubmitting}
+            className="px-6 py-4 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 flex items-center"
+          >
+            <Cancel className="mr-2 h-5 w-5" />
+            Cancel
+          </button>
         )}
-      </button>
+      </div>
     </form>
   );
 };

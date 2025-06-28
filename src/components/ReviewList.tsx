@@ -1,11 +1,41 @@
 // components/ReviewList.tsx
 import React, { useState } from 'react';
-import { Star, Loader2, AlertCircle, Image as ImageIcon, X } from 'lucide-react';
+import { Star, Loader2, AlertCircle, Image as ImageIcon, X, Edit, Trash2, MoreVertical } from 'lucide-react';
 import { useReviewContext } from '../contexts/ReviewContext';
+import ReviewForm from './ReviewForm';
 
 const ReviewList: React.FC = () => {
-  const { reviews, loading, error } = useReviewContext();
+  const { reviews, deleteReview, loading, error } = useReviewContext();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [editingReview, setEditingReview] = useState<any>(null);
+  const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null);
+  const [showMenuForReview, setShowMenuForReview] = useState<string | null>(null);
+
+  const handleDeleteReview = async (reviewId: string) => {
+    if (!confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
+      return;
+    }
+
+    setDeletingReviewId(reviewId);
+    try {
+      await deleteReview(reviewId);
+    } catch (error) {
+      console.error('Failed to delete review:', error);
+      alert('Failed to delete review. Please try again.');
+    } finally {
+      setDeletingReviewId(null);
+      setShowMenuForReview(null);
+    }
+  };
+
+  const handleEditReview = (review: any) => {
+    setEditingReview(review);
+    setShowMenuForReview(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingReview(null);
+  };
 
   if (loading) {
     return (
@@ -36,6 +66,18 @@ const ReviewList: React.FC = () => {
     );
   }
 
+  // Show edit form if editing
+  if (editingReview) {
+    return (
+      <div className="space-y-6">
+        <ReviewForm 
+          editingReview={editingReview} 
+          onCancelEdit={handleCancelEdit}
+        />
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="space-y-6">
@@ -48,9 +90,50 @@ const ReviewList: React.FC = () => {
         {reviews.map((review) => (
           <div
             key={review.id}
-            className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-200"
+            className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-200 relative"
           >
-            <div className="flex items-start justify-between mb-4">
+            {/* Review Actions Menu */}
+            <div className="absolute top-4 right-4">
+              <div className="relative">
+                <button
+                  onClick={() => setShowMenuForReview(showMenuForReview === review.id ? null : review.id)}
+                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </button>
+                
+                {showMenuForReview === review.id && (
+                  <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-10">
+                    <button
+                      onClick={() => handleEditReview(review)}
+                      className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center rounded-t-lg"
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit Review
+                    </button>
+                    <button
+                      onClick={() => handleDeleteReview(review.id!)}
+                      disabled={deletingReviewId === review.id}
+                      className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center rounded-b-lg disabled:opacity-50"
+                    >
+                      {deletingReviewId === review.id ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Deleting...
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete Review
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-start justify-between mb-4 pr-8">
               <div>
                 <h4 className="font-bold text-lg text-gray-900 dark:text-white">
                   {review.name}
@@ -82,7 +165,7 @@ const ReviewList: React.FC = () => {
               "{review.text}"
             </p>
 
-            {/* Display uploaded image if available with optimized loading */}
+            {/* Display uploaded image with optimized loading */}
             {review.imageUrl && (
               <div className="mb-4">
                 <div className="relative w-full max-w-md">
@@ -91,7 +174,7 @@ const ReviewList: React.FC = () => {
                     alt="Review photo"
                     className="w-full h-48 object-cover rounded-lg shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer"
                     onClick={() => setSelectedImage(review.imageUrl!)}
-                    loading="lazy" // Lazy loading for better performance
+                    loading="lazy"
                   />
                   <div className="absolute bottom-2 right-2 bg-black/50 text-white px-2 py-1 rounded text-xs flex items-center">
                     <ImageIcon className="h-3 w-3 mr-1" />
@@ -131,6 +214,14 @@ const ReviewList: React.FC = () => {
             />
           </div>
         </div>
+      )}
+
+      {/* Click outside to close menu */}
+      {showMenuForReview && (
+        <div 
+          className="fixed inset-0 z-5" 
+          onClick={() => setShowMenuForReview(null)}
+        />
       )}
     </>
   );

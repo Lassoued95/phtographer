@@ -1,7 +1,7 @@
 // contexts/ReviewContext.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { collection, onSnapshot, addDoc, query, orderBy } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { collection, onSnapshot, addDoc, query, orderBy, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, storage } from '../firebaseConfig';
 
 interface Review {
@@ -17,6 +17,8 @@ interface Review {
 interface ReviewContextType {
   reviews: Review[];
   addReview: (review: Omit<Review, 'id' | 'createdAt' | 'imageUrl'> & { image?: File | null }) => Promise<void>;
+  updateReview: (reviewId: string, updates: Partial<Review> & { image?: File | null }) => Promise<void>;
+  deleteReview: (reviewId: string) => Promise<void>;
   loading: boolean;
   error: string | null;
 }
@@ -31,7 +33,6 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     console.log('Setting up Firestore listener...');
     
-    // Create a query to order reviews by creation date (newest first)
     const reviewsQuery = query(
       collection(db, 'reviews'),
       orderBy('createdAt', 'desc')
@@ -44,7 +45,6 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         
         const fetchedReviews = snapshot.docs.map(doc => {
           const data = doc.data();
-          console.log('Review data:', data);
           
           return {
             id: doc.id,
@@ -57,7 +57,6 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           } as Review;
         });
         
-        console.log('Processed reviews:', fetchedReviews);
         setReviews(fetchedReviews);
         setLoading(false);
         setError(null);
@@ -75,62 +74,111 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
   }, []);
 
+  const uploadImage = async (image: File): Promise<string> => {
+    const timestamp = Date.now();
+    const fileExtension = image.name.split('.').pop() || 'jpg';
+    const fileName = `review-${timestamp}.${fileExtension}`;
+    
+    const imageRef = ref(storage, `review-images/${fileName}`);
+    
+    // Optimized upload with minimal metadata for speed
+    const uploadResult = await uploadBytes(imageRef, image);
+    return await getDownloadURL(uploadResult.ref);
+  };
+
   const addReview = async (review: Omit<Review, 'id' | 'createdAt' | 'imageUrl'> & { image?: File | null }) => {
     try {
-      console.log('Adding review with image:', !!review.image);
+      console.log('Adding review...');
       
       let imageUrl = '';
       
-      // CRITICAL FIX: Upload image FIRST and wait for completion before creating review
       if (review.image) {
-        console.log('Starting image upload...');
-        
-        // Create a unique filename with timestamp
-        const timestamp = Date.now();
-        const fileExtension = review.image.name.split('.').pop() || 'jpg';
-        const fileName = `review-${timestamp}.${fileExtension}`;
-        
-        // Upload with metadata for better performance
-        const imageRef = ref(storage, `review-images/${fileName}`);
-        const metadata = {
-          contentType: review.image.type,
-          cacheControl: 'public,max-age=31536000', // Cache for 1 year
-        };
-        
-        try {
-          console.log('Uploading image to Firebase Storage...');
-          const uploadResult = await uploadBytes(imageRef, review.image, metadata);
-          imageUrl = await getDownloadURL(uploadResult.ref);
-          console.log('Image upload completed successfully:', imageUrl);
-        } catch (uploadError) {
-          console.error('Image upload failed:', uploadError);
-          throw new Error('Failed to upload image. Please try again.');
-        }
+        console.log('Uploading image...');
+        imageUrl = await uploadImage(review.image);
+        console.log('Image uploaded successfully');
       }
       
-      // Only create the review AFTER image upload is complete (or if no image)
       const reviewData = {
         name: review.name || 'Anonymous',
         location: review.location || '',
         text: review.text || '',
         rating: review.rating || 5,
-        imageUrl: imageUrl, // This will be the actual URL or empty string
+        imageUrl: imageUrl,
         createdAt: new Date()
       };
       
-      console.log('Creating review document with data:', reviewData);
       const docRef = await addDoc(collection(db, 'reviews'), reviewData);
       console.log('Review added successfully with ID:', docRef.id);
       
     } catch (error) {
       console.error('Failed to add review:', error);
-      setError('Failed to add review');
-      throw error;
+      throw new Error('Failed to add review. Please try again.');
+    }
+  };
+
+  const updateReview = async (reviewId: string, updates: Partial<Review> & { image?: File | null }) => {
+    try {
+      console.log('Updating review:', reviewId);
+      
+      const updateData: any = { ...updates };
+      delete updateData.image; // Remove image from update data
+      
+      // Handle image update
+      if (updates.image) {
+        console.log('Uploading new image...');
+        updateData.imageUrl = await uploadImage(updates.image);
+        console.log('New image uploaded successfully');
+      }
+      
+      const reviewRef = doc(db, 'reviews', reviewId);
+      await updateDoc(reviewRef, updateData);
+      console.log('Review updated successfully');
+      
+    } catch (error) {
+      console.error('Failed to update review:', error);
+      throw new Error('Failed to update review. Please try again.');
+    }
+  };
+
+  const deleteReview = async (reviewId: string) => {
+    try {
+      console.log('Deleting review:', reviewId);
+      
+      // Find the review to get image URL for deletion
+      const review = reviews.find(r => r.id === reviewId);
+      
+      // Delete image from storage if exists
+      if (review?.imageUrl) {
+        try {
+          const imageRef = ref(storage, review.imageUrl);
+          await deleteObject(imageRef);
+          console.log('Image deleted from storage');
+        } catch (imageError) {
+          console.warn('Failed to delete image from storage:', imageError);
+          // Continue with review deletion even if image deletion fails
+        }
+      }
+      
+      // Delete review document
+      const reviewRef = doc(db, 'reviews', reviewId);
+      await deleteDoc(reviewRef);
+      console.log('Review deleted successfully');
+      
+    } catch (error) {
+      console.error('Failed to delete review:', error);
+      throw new Error('Failed to delete review. Please try again.');
     }
   };
 
   return (
-    <ReviewContext.Provider value={{ reviews, addReview, loading, error }}>
+    <ReviewContext.Provider value={{ 
+      reviews, 
+      addReview, 
+      updateReview, 
+      deleteReview, 
+      loading, 
+      error 
+    }}>
       {children}
     </ReviewContext.Provider>
   );
