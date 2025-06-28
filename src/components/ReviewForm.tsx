@@ -1,6 +1,6 @@
 // components/ReviewForm.tsx
 import React, { useState, useEffect } from 'react';
-import { Star, Send, CheckCircle, Loader2, Upload, X, Image as ImageIcon, Zap, Edit, Save, XCircle as Cancel } from 'lucide-react';
+import { Star, Send, CheckCircle, Loader2, Upload, X, Image as ImageIcon, Zap, Edit, Save, XCircle as Cancel, Clock } from 'lucide-react';
 import { useReviewContext } from '../contexts/ReviewContext';
 import { compressImage, createImagePreview, validateImageFile } from '../utils/imageUtils';
 
@@ -42,6 +42,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ editingReview, onCancelEdit }) 
   const [error, setError] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [compressionInfo, setCompressionInfo] = useState<{ original: number; compressed: number } | null>(null);
+  const [hasImageToUpload, setHasImageToUpload] = useState(false);
 
   // Populate form when editing
   useEffect(() => {
@@ -54,10 +55,12 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ editingReview, onCancelEdit }) 
         image: null
       });
       setImagePreview(editingReview.imageUrl || null);
+      setHasImageToUpload(false);
     } else {
       setFormData({ name: '', location: '', text: '', rating: 0, image: null });
       setImagePreview(null);
       setCompressionInfo(null);
+      setHasImageToUpload(false);
     }
   }, [editingReview]);
 
@@ -84,6 +87,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ editingReview, onCancelEdit }) 
 
     try {
       if (editingReview) {
+        // Update existing review
         await updateReview(editingReview.id, {
           name: formData.name.trim(),
           location: formData.location.trim(),
@@ -94,6 +98,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ editingReview, onCancelEdit }) 
         
         if (onCancelEdit) onCancelEdit();
       } else {
+        // Add new review - this will be INSTANT now!
         await addReview({
           name: formData.name.trim(),
           location: formData.location.trim(),
@@ -102,13 +107,15 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ editingReview, onCancelEdit }) 
           image: formData.image
         });
         
+        // Show success immediately
         setIsSubmitted(true);
         setTimeout(() => {
           setIsSubmitted(false);
           setFormData({ name: '', location: '', text: '', rating: 0, image: null });
           setImagePreview(null);
           setCompressionInfo(null);
-        }, 3000);
+          setHasImageToUpload(false);
+        }, 4000); // Show success message longer
       }
     } catch (err) {
       console.error('Error submitting review:', err);
@@ -142,7 +149,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ editingReview, onCancelEdit }) 
     try {
       const originalSize = file.size;
       
-      // Ultra-aggressive compression for sub-3-second uploads (400px, 60% quality)
+      // Ultra-aggressive compression for instant upload
       const compressedFile = await compressImage(file, 400, 0.6);
       const compressedSize = compressedFile.size;
       
@@ -151,6 +158,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ editingReview, onCancelEdit }) 
       setFormData({ ...formData, image: compressedFile });
       setImagePreview(preview);
       setCompressionInfo({ original: originalSize, compressed: compressedSize });
+      setHasImageToUpload(true);
       
     } catch (err) {
       console.error('Error processing image:', err);
@@ -164,6 +172,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ editingReview, onCancelEdit }) 
     setFormData({ ...formData, image: null });
     setImagePreview(editingReview?.imageUrl || null);
     setCompressionInfo(null);
+    setHasImageToUpload(false);
   };
 
   const handleStarClick = (rating: number) => {
@@ -184,12 +193,19 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ editingReview, onCancelEdit }) 
       <div className="text-center py-12">
         <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
         <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
-          Thank You!
+          ⚡ Review Posted Instantly!
         </h3>
         <p className="text-gray-600 dark:text-gray-300 mb-4">
-          Your review has been submitted successfully! 
-          {formData.image && " Your photo is being uploaded in the background."}
+          Your review is now live and visible to everyone!
         </p>
+        {hasImageToUpload && (
+          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg mb-4">
+            <p className="text-blue-700 dark:text-blue-300 text-sm flex items-center justify-center">
+              <Clock className="h-4 w-4 mr-2" />
+              Your photo is being uploaded in the background and will appear shortly.
+            </p>
+          </div>
+        )}
         <p className="text-sm text-blue-600 dark:text-blue-400">
           💡 Tip: You can edit or delete your review anytime by clicking the menu (⋮) on your review.
         </p>
@@ -222,12 +238,12 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ editingReview, onCancelEdit }) 
         )}
       </div>
 
-      {/* Speed optimization notice */}
+      {/* Instant submission notice */}
       {!editingReview && (
         <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
           <p className="text-green-700 dark:text-green-300 text-sm flex items-center">
             <Zap className="h-4 w-4 mr-2" />
-            <strong>Fast Upload:</strong> Your review will be posted instantly. Photos are optimized for lightning-fast upload (under 3 seconds)!
+            <strong>Lightning Fast:</strong> Your review will appear instantly! Photos upload in the background.
           </p>
         </div>
       )}
@@ -319,11 +335,11 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ editingReview, onCancelEdit }) 
         ></textarea>
       </div>
 
-      {/* Ultra-Fast Image Upload Section */}
+      {/* Image Upload Section */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           {editingReview ? 'Update Photo (Optional)' : 'Add a Photo (Optional)'}
-          <span className="text-xs text-green-600 dark:text-green-400 ml-2">⚡ Lightning fast upload!</span>
+          <span className="text-xs text-green-600 dark:text-green-400 ml-2">⚡ Uploads in background!</span>
         </label>
         
         {!imagePreview ? (
@@ -347,7 +363,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ editingReview, onCancelEdit }) 
                   <>
                     <Loader2 className="w-8 h-8 mb-2 text-green-500 animate-spin" />
                     <p className="text-sm text-green-600 dark:text-green-400 font-medium">
-                      ⚡ Ultra-fast compression...
+                      ⚡ Optimizing for instant upload...
                     </p>
                   </>
                 ) : (
@@ -357,10 +373,10 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ editingReview, onCancelEdit }) 
                       <span className="font-semibold">Click to upload</span> or drag and drop
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      PNG, JPG or JPEG (MAX. 3MB - optimized for instant upload)
+                      PNG, JPG or JPEG (MAX. 3MB)
                     </p>
                     <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                      ⚡ Uploads in under 3 seconds!
+                      ⚡ Review posts instantly, photo uploads in background!
                     </p>
                   </>
                 )}
@@ -387,7 +403,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ editingReview, onCancelEdit }) 
             <div className="mt-2 flex items-center justify-between">
               <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
                 <ImageIcon className="h-4 w-4 mr-1" />
-                {formData.image ? 'Ready for instant upload!' : 'Current image'}
+                {formData.image ? 'Ready for background upload!' : 'Current image'}
               </p>
               {compressionInfo && (
                 <p className="text-xs text-green-600 dark:text-green-400 flex items-center">
@@ -409,7 +425,7 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ editingReview, onCancelEdit }) 
           {isSubmitting ? (
             <>
               <Loader2 className="animate-spin mr-2 h-5 w-5" />
-              {editingReview ? 'Updating...' : 'Submitting...'}
+              {editingReview ? 'Updating...' : 'Posting...'}
             </>
           ) : isProcessingImage ? (
             <>
@@ -425,8 +441,8 @@ const ReviewForm: React.FC<ReviewFormProps> = ({ editingReview, onCancelEdit }) 
                 </>
               ) : (
                 <>
-                  Submit Review
-                  <Send className="ml-2 h-5 w-5" />
+                  <Zap className="mr-2 h-5 w-5" />
+                  Post Review Instantly
                 </>
               )}
             </>

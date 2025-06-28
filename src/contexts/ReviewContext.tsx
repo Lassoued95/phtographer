@@ -77,50 +77,60 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
   }, []);
 
-  const uploadImageFast = async (image: File): Promise<string> => {
-    const timestamp = Date.now();
-    const fileName = `review-${timestamp}.jpg`; // Always use .jpg for consistency
-    
-    const imageRef = ref(storage, `review-images/${fileName}`);
-    
-    // Ultra-fast upload with minimal metadata
-    const uploadResult = await uploadBytes(imageRef, image, {
-      cacheControl: 'public,max-age=3600', // Cache for faster loading
-    });
-    
-    return await getDownloadURL(uploadResult.ref);
+  const uploadImageInBackground = async (image: File, reviewId: string): Promise<void> => {
+    try {
+      console.log('Starting background image upload for review:', reviewId);
+      
+      const timestamp = Date.now();
+      const fileName = `review-${reviewId}-${timestamp}.jpg`;
+      const imageRef = ref(storage, `review-images/${fileName}`);
+      
+      // Upload with minimal metadata for speed
+      const uploadResult = await uploadBytes(imageRef, image, {
+        cacheControl: 'public,max-age=3600',
+      });
+      
+      const imageUrl = await getDownloadURL(uploadResult.ref);
+      
+      // Update the review with the image URL
+      const reviewRef = doc(db, 'reviews', reviewId);
+      await updateDoc(reviewRef, { imageUrl });
+      
+      console.log('Background image upload completed successfully');
+    } catch (error) {
+      console.error('Background image upload failed:', error);
+      // Don't throw error - review is already saved
+    }
   };
 
   const addReview = async (review: Omit<Review, 'id' | 'createdAt' | 'imageUrl' | 'userId'> & { image?: File | null }) => {
     try {
-      console.log('Adding review...');
+      console.log('Adding review instantly...');
       
-      // First, add the review without image for immediate feedback
+      // INSTANT SUBMISSION: Add review immediately without waiting for image
       const reviewData = {
         name: review.name || 'Anonymous',
         location: review.location || '',
         text: review.text || '',
         rating: review.rating || 5,
-        imageUrl: '', // Will be updated if image exists
+        imageUrl: '', // Will be updated in background if image exists
         userId: getUserId(),
         createdAt: new Date()
       };
       
+      // This is the ONLY await in the submission process - super fast!
       const docRef = await addDoc(collection(db, 'reviews'), reviewData);
-      console.log('Review added successfully with ID:', docRef.id);
+      console.log('✅ Review submitted instantly with ID:', docRef.id);
       
-      // If there's an image, upload it and update the review
+      // Start background image upload WITHOUT awaiting it
       if (review.image) {
-        console.log('Uploading image in background...');
-        try {
-          const imageUrl = await uploadImageFast(review.image);
-          await updateDoc(doc(db, 'reviews', docRef.id), { imageUrl });
-          console.log('Image uploaded and review updated');
-        } catch (imageError) {
-          console.error('Image upload failed, but review was saved:', imageError);
-          // Review is still saved, just without image
-        }
+        console.log('🚀 Starting background image upload...');
+        uploadImageInBackground(review.image, docRef.id).catch(error => {
+          console.warn('Background image upload failed, but review was saved:', error);
+        });
       }
+      
+      // Return immediately - don't wait for image upload!
       
     } catch (error) {
       console.error('Failed to add review:', error);
@@ -142,22 +152,17 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       delete updateData.image;
       delete updateData.userId;
       
-      // Update review first (without image)
+      // Update review text instantly
       const reviewRef = doc(db, 'reviews', reviewId);
       await updateDoc(reviewRef, updateData);
-      console.log('Review text updated successfully');
+      console.log('✅ Review updated instantly');
       
-      // Handle image update separately for speed
+      // Handle image update in background
       if (updates.image) {
-        console.log('Uploading new image...');
-        try {
-          const imageUrl = await uploadImageFast(updates.image);
-          await updateDoc(reviewRef, { imageUrl });
-          console.log('New image uploaded successfully');
-        } catch (imageError) {
-          console.error('Image upload failed, but review text was updated:', imageError);
-          // Review text is still updated, just image failed
-        }
+        console.log('🚀 Starting background image update...');
+        uploadImageInBackground(updates.image, reviewId).catch(error => {
+          console.warn('Background image update failed, but review text was updated:', error);
+        });
       }
       
     } catch (error) {
@@ -176,19 +181,20 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         throw new Error('You can only delete your own reviews.');
       }
       
-      // Delete review document first for immediate UI feedback
+      // Delete review document instantly
       const reviewRef = doc(db, 'reviews', reviewId);
       await deleteDoc(reviewRef);
-      console.log('Review deleted successfully');
+      console.log('✅ Review deleted instantly');
       
       // Delete image from storage in background
       if (review?.imageUrl) {
         try {
           const imageRef = ref(storage, review.imageUrl);
-          await deleteObject(imageRef);
-          console.log('Image deleted from storage');
+          deleteObject(imageRef).catch(error => {
+            console.warn('Failed to delete image from storage (review still deleted):', error);
+          });
         } catch (imageError) {
-          console.warn('Failed to delete image from storage (review still deleted):', imageError);
+          console.warn('Image deletion error (review still deleted):', imageError);
         }
       }
       
