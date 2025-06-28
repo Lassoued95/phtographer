@@ -1,6 +1,6 @@
 // components/ReviewForm.tsx
 import React, { useState } from 'react';
-import { Star, Send, CheckCircle, Loader2, Upload, X, Image as ImageIcon, Compress } from 'lucide-react';
+import { Star, Send, CheckCircle, Loader2, Upload, X, Image as ImageIcon, Compass as Compress } from 'lucide-react';
 import { useReviewContext } from '../contexts/ReviewContext';
 import { compressImage, createImagePreview, validateImageFile } from '../utils/imageUtils';
 
