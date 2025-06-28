@@ -1,6 +1,6 @@
 // components/ReviewList.tsx
 import React from 'react';
-import { Star, Loader2, AlertCircle } from 'lucide-react';
+import { Star, Loader2, AlertCircle, Image as ImageIcon } from 'lucide-react';
 import { useReviewContext } from '../contexts/ReviewContext';
 
 const ReviewList: React.FC = () => {
@@ -76,9 +76,26 @@ const ReviewList: React.FC = () => {
             </div>
           </div>
           
-          <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+          <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
             "{review.text}"
           </p>
+
+          {/* Display uploaded image if available */}
+          {review.imageUrl && (
+            <div className="mb-4">
+              <div className="relative w-full max-w-md">
+                <img
+                  src={review.imageUrl}
+                  alt="Review photo"
+                  className="w-full h-48 object-cover rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200"
+                />
+                <div className="absolute bottom-2 right-2 bg-black/50 text-white px-2 py-1 rounded text-xs flex items-center">
+                  <ImageIcon className="h-3 w-3 mr-1" />
+                  Photo
+                </div>
+              </div>
+            </div>
+          )}
           
           {review.createdAt && (
             <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">

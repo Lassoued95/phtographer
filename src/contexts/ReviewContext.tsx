@@ -1,7 +1,8 @@
 // contexts/ReviewContext.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { collection, onSnapshot, addDoc, query, orderBy } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../firebaseConfig';
 
 interface Review {
   id?: string;
@@ -9,12 +10,13 @@ interface Review {
   location?: string;
   text: string;
   rating: number;
+  imageUrl?: string;
   createdAt?: any;
 }
 
 interface ReviewContextType {
   reviews: Review[];
-  addReview: (review: Omit<Review, 'id' | 'createdAt'>) => Promise<void>;
+  addReview: (review: Omit<Review, 'id' | 'createdAt' | 'imageUrl'> & { image?: File | null }) => Promise<void>;
   loading: boolean;
   error: string | null;
 }
@@ -50,6 +52,7 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             location: data.location || '',
             text: data.text || '',
             rating: data.rating || 5,
+            imageUrl: data.imageUrl || '',
             createdAt: data.createdAt
           } as Review;
         });
@@ -72,18 +75,28 @@ export const ReviewProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
   }, []);
 
-  const addReview = async (review: Omit<Review, 'id' | 'createdAt'>) => {
+  const addReview = async (review: Omit<Review, 'id' | 'createdAt' | 'imageUrl'> & { image?: File | null }) => {
     try {
       console.log('Adding review:', review);
       
+      let imageUrl = '';
+      
+      // Upload image if provided
+      if (review.image) {
+        console.log('Uploading image...');
+        const imageRef = ref(storage, `review-images/${Date.now()}-${review.image.name}`);
+        const uploadResult = await uploadBytes(imageRef, review.image);
+        imageUrl = await getDownloadURL(uploadResult.ref);
+        console.log('Image uploaded successfully:', imageUrl);
+      }
+      
       const reviewData = {
-        ...review,
-        createdAt: new Date(),
-        // Ensure all required fields are present
         name: review.name || 'Anonymous',
         location: review.location || '',
         text: review.text || '',
-        rating: review.rating || 5
+        rating: review.rating || 5,
+        imageUrl: imageUrl,
+        createdAt: new Date()
       };
       
       const docRef = await addDoc(collection(db, 'reviews'), reviewData);
