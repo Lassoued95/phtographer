@@ -135,7 +135,7 @@ const Home = () => {
               delay: 200
             }, {
               title: "Luxury Villas",
-              image: "/assets/images/villas/5.jpg",
+              image: "/assets/images/villas/5.JPG",
               delay: 400
             }, {
               title: "Nature",

@@ -18,15 +18,15 @@ const Portfolio = () => {
     { id: 1, category: 'tourists', image: '/assets/images/tourists/2.jpg', title: 'Couple Photography in Djerba', type: 'image' },
     { id: 2, category: 'horse', image: '/assets/images/horse/5.jpg', title: 'Camel & Horse Riding in Djerba', type: 'image' },
     { id: 3, category: 'horse', image: '/assets/images/horse/1.jpg', title: 'Traditional Tunisian Market', type: 'image' },
-    { id: 4, category: 'villas', image: '/assets/images/villas/1.jpg', title: 'Luxury Villas in Djerba', type: 'image' },
+    { id: 4, category: 'villas', image: '/assets/images/villas/1.JPG', title: 'Luxury Villas in Djerba', type: 'image' },
     { id: 5, category: 'horse', image: '/assets/images/horse/3.jpg', title: 'Artisan at Work', type: 'image' },
-    { id: 6, category: 'villas', image: '/assets/images/villas/2.jpg', title: 'Luxury Villas in Djerba', type: 'image' },
+    { id: 6, category: 'villas', image: '/assets/images/villas/2.JPG', title: 'Luxury Villas in Djerba', type: 'image' },
     { id: 7, category: 'tourists', image: '/assets/images/tourists/1.jpg', title: 'Couple Photography in Djerba', type: 'image' },
     { id: 8, category: 'horse', image: '/assets/images/horse/2.jpg', title: 'Horseback Riding in Djerba', type: 'image' },
-    { id: 9, category: 'villas', image: '/assets/images/villas/5.jpg', title: 'Luxury Villas in Djerba', type: 'image' },
+    { id: 9, category: 'villas', image: '/assets/images/villas/5.JPG', title: 'Luxury Villas in Djerba', type: 'image' },
     { id: 10, category: 'horse', image: '/assets/images/horse/4.jpeg', title: 'Horseback Riding in Djerba', type: 'image' },
-    { id: 11, category: 'villas', image: '/assets/images/villas/6.jpg', title: 'Luxury Villas in Djerba', type: 'image' },
-    { id: 12, category: 'villas', image: '/assets/images/villas/7.jpg', title: 'Luxury Villas in Djerba', type: 'image' },
+    { id: 11, category: 'villas', image: '/assets/images/villas/6.JPG', title: 'Luxury Villas in Djerba', type: 'image' },
+    { id: 12, category: 'villas', image: '/assets/images/villas/7.JPG', title: 'Luxury Villas in Djerba', type: 'image' },
   ];
 
   const videoShowcase = {
